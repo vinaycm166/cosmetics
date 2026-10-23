@@ -82,62 +82,69 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Luxury Editorial Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#EFE7E1]">
-        <div className="space-y-2">
-          <span className="text-[11px] font-black uppercase tracking-[0.25em] text-berry">
-            The Complete Portfolio
-          </span>
-          <h1 className="font-editorial text-4xl sm:text-5xl lg:text-6xl text-charcoal leading-tight">
-            Curated Formulations
-          </h1>
-          <p className="text-xs sm:text-sm text-muted font-sans font-normal">
-            Displaying {filteredProducts.length} dermatologically verified beauty essentials ready for 15-minute dispatch.
-          </p>
-        </div>
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center gap-2 text-xs text-muted -mb-4">
+        <button onClick={() => onNavigate('/')} className="hover:text-burgundy transition-colors">Home</button>
+        <span>&gt;</span>
+        <span className="text-charcoal font-semibold capitalize">{selectedCategory === 'all' ? 'Skincare' : selectedCategory}</span>
+      </nav>
 
-        {/* Sorting Dropdown & View Mode Controls */}
-        <div className="flex items-center gap-3">
+      {/* Header Matching Reference Image */}
+      <div className="space-y-3 pb-6 border-b border-[#F0EAE8]">
+        <h1 className="font-editorial text-4xl sm:text-5xl font-bold text-charcoal tracking-tight capitalize">
+          {selectedCategory === 'all' ? 'Skincare' : selectedCategory}
+        </h1>
+        <p className="text-xs sm:text-sm text-muted font-sans font-normal">
+          Cleansers, moisturizers, serums, sunscreens and more for healthy, glowing skin.
+        </p>
+
+        {/* Quick Brand Filter Pills Row */}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          {['all', 'CeraVe', 'Minimalist', 'The Ordinary', 'La Roche-Posay', 'Clinique', 'Neutrogena'].map((brand) => (
+            <button
+              key={brand}
+              onClick={() => setSelectedBrand(brand === 'all' ? 'all' : brand)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                (brand === 'all' && selectedBrand === 'all') || selectedBrand === brand
+                  ? 'bg-burgundy text-white font-bold shadow-2xs'
+                  : 'bg-white hover:bg-[#FAF8F6] text-charcoal border border-[#EFE7E1]'
+              }`}
+            >
+              {brand === 'all' ? 'All' : brand}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Products Count & Sorting Bar */}
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-xs text-muted font-medium">
+          {filteredProducts.length} products
+        </span>
+
+        <div className="flex items-center gap-2">
           {/* Mobile Filter Toggle */}
           <button
             onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-            className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#EFE7E1] bg-white text-xs font-bold text-charcoal shadow-subtle"
+            className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#EFE7E1] bg-white text-xs font-bold text-charcoal shadow-2xs"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-berry" />
-            <span>Filters ({hasActiveFilters ? 'Active' : 'All'})</span>
+            <SlidersHorizontal className="w-3.5 h-3.5 text-burgundy" />
+            <span>Filters</span>
           </button>
 
-          {/* Desktop Grid Layout Switcher */}
-          <div className="hidden lg:flex items-center gap-1 glass-pill p-1 rounded-xl shadow-subtle border border-[#EFE7E1]">
-            <button
-              onClick={() => setGridCols('3')}
-              className={`p-1.5 rounded-lg transition-colors ${gridCols === '3' ? 'bg-berry text-white' : 'text-charcoal hover:bg-black/5'}`}
-              title="Large Editorial Grid (3 columns)"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setGridCols('4')}
-              className={`p-1.5 rounded-lg transition-colors ${gridCols === '4' ? 'bg-berry text-white' : 'text-charcoal hover:bg-black/5'}`}
-              title="Compact Grid (4 columns)"
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-          </div>
-
           {/* Sort Selector */}
-          <div className="flex items-center gap-2 glass-pill px-3 py-2 rounded-xl border border-[#EFE7E1] shadow-subtle">
-            <ArrowUpDown className="w-3.5 h-3.5 text-berry" />
+          <div className="flex items-center gap-1.5 text-xs text-muted">
+            <span className="hidden sm:inline">Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-xs font-bold text-charcoal focus:outline-none cursor-pointer"
+              className="bg-white border border-[#EFE7E1] rounded-lg px-2.5 py-1.5 text-xs font-semibold text-charcoal focus:outline-none cursor-pointer"
             >
-              <option value="bestseller">Featured & Bestsellers</option>
+              <option value="bestseller">Popularity</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
-              <option value="newest">New Arrivals</option>
-              <option value="rating">Highest Rated</option>
+              <option value="newest">Newest First</option>
+              <option value="rating">Customer Rating</option>
             </select>
           </div>
         </div>

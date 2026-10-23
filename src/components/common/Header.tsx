@@ -206,31 +206,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-border shadow-subtle transition-colors">
       
-      {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP */}
-      <div className="bg-gradient-to-r from-berry via-brand to-rose text-white py-1.5 px-4 text-center overflow-hidden transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-[11px] font-medium tracking-wide">
-          <div className="hidden md:flex items-center gap-1.5 opacity-90">
-            <Sparkles className="w-3.5 h-3.5 text-lavender" />
-            <span>Hyperlocal Beauty Quick-Commerce</span>
+      {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP (MATCHING REFERENCE IMAGE) */}
+      <div className="bg-burgundy text-white py-1.5 px-4 text-center overflow-hidden transition-all duration-300">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 sm:gap-8 text-[11px] sm:text-xs font-medium tracking-wide">
+          <div className="flex items-center gap-1.5">
+            <span>🚚</span>
+            <span>Free delivery in Gokulam, Mysuru</span>
           </div>
-
-          <div className="flex-1 text-center transition-all duration-500 flex items-center justify-center gap-2">
-            <button 
-              onClick={() => onNavigate(announcements[announcementIndex].link)}
-              className="hover:underline flex items-center gap-1 font-semibold"
-            >
-              <span>{announcements[announcementIndex].text}</span>
-              <ChevronRight className="w-3 h-3 inline" />
-            </button>
+          <span className="opacity-40">•</span>
+          <div className="flex items-center gap-1.5">
+            <span>🛡️</span>
+            <span>Authentic Products</span>
           </div>
-
-          <div className="hidden md:flex items-center gap-3 text-xs">
-            <button 
-              onClick={() => onNavigate('/offers')} 
-              className="bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase transition-colors"
-            >
-              Offers & Codes
-            </button>
+          <span className="opacity-40">•</span>
+          <div className="flex items-center gap-1.5">
+            <span>⚡</span>
+            <span>Fast & Reliable Delivery</span>
           </div>
         </div>
       </div>
@@ -239,75 +230,53 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 sm:h-20 gap-3 sm:gap-6">
           
-          {/* Logo & Delivery Location Pill */}
+          {/* Logo with Botanical Flower Icon */}
           <div className="flex items-center gap-4 lg:gap-6 shrink-0">
             <button
               onClick={() => onNavigate('/')}
-              className="text-left flex flex-col group py-1"
+              className="text-left flex items-center gap-2 group py-1"
             >
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-editorial text-3xl sm:text-4xl tracking-tight text-charcoal group-hover:text-berry transition-colors">
-                  DEW & GO
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-champagne-500 inline-block shadow-sm"></span>
-              </div>
-              <span className="text-[9px] tracking-[0.25em] text-berry uppercase font-black -mt-1 group-hover:text-charcoal transition-colors font-mono">
-                HAUTE QUICK-COMMERCE
-              </span>
-            </button>
-
-            {/* Hyperlocal Delivery Location Selector */}
-            <button
-              onClick={openLocationModal}
-              className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-md border border-border bg-warmcream hover:border-brand/40 hover:bg-blush/40 text-left transition-all duration-150 shadow-sm"
-              title="Change Delivery Location"
-            >
-              <div className="relative">
-                <MapPin className="w-4 h-4 text-rose shrink-0" />
-                {isServiceable && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                )}
+              <div className="w-8 h-8 rounded-full bg-burgundy/5 flex items-center justify-center text-burgundy group-hover:scale-105 transition-transform">
+                <svg className="w-5 h-5 fill-burgundy" viewBox="0 0 24 24">
+                  <path d="M12 2C13.5 5 15.5 6.5 18.5 8C15.5 9.5 13.5 11 12 14C10.5 11 8.5 9.5 5.5 8C8.5 6.5 10.5 5 12 2Z" />
+                  <circle cx="12" cy="18" r="2" />
+                  <path d="M7 16C8 14 10 13.5 12 14C14 13.5 16 14 17 16C15 17 14 18.5 12 18.5C10 18.5 9 17 7 16Z" opacity="0.6" />
+                </svg>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-muted flex items-center gap-1 leading-tight">
-                  {isServiceable ? (
-                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
-                      <Clock className="w-2.5 h-2.5" /> ⚡ {estimatedDeliveryMinutes} Mins Delivery
-                    </span>
-                  ) : (
-                    <span className="text-amber-700 font-semibold">Service Check</span>
-                  )}
-                  <ChevronDown className="w-2.5 h-2.5 text-neutral-400" />
+                <span className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-charcoal group-hover:text-burgundy transition-colors leading-none">
+                  Dew & Go
                 </span>
-                <span className="text-xs font-semibold text-charcoal truncate max-w-[140px]">
-                  {selectedArea || `PIN ${selectedPinCode}`}
+                <span className="text-[8px] sm:text-[9px] tracking-[0.25em] text-burgundy/80 uppercase font-semibold mt-0.5">
+                  BEAUTY • CARE • YOU
                 </span>
               </div>
             </button>
           </div>
 
-          {/* 3. PROMINENT PRODUCT SEARCH WITH AUTOCOMPLETE */}
-          <div ref={searchContainerRef} className="flex-1 max-w-xl relative">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                placeholder="Search sunscreen, niacinamide, lip oil, blushes..."
-                className="w-full pl-9 pr-9 py-2.5 rounded-full border border-border bg-[#FCF8F5] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all shadow-inner"
-              />
-              <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </form>
+          {/* 3. SEARCH BAR + HYPERLOCAL LOCATION PILL */}
+          <div className="flex-1 max-w-2xl flex items-center gap-2.5">
+            <div ref={searchContainerRef} className="flex-1 relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  placeholder="Search for skincare, makeup, haircare..."
+                  className="w-full pl-9 pr-8 py-2 sm:py-2.5 rounded-full border border-[#EFE7E1] bg-[#FAF8F6] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-burgundy focus:ring-1 focus:ring-burgundy/20 transition-all shadow-inner"
+                />
+                <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </form>
 
             {/* LIVE SEARCH AUTOCOMPLETE POPUP */}
             {isSearchFocused && (
@@ -395,28 +364,33 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
                 )}
               </div>
             )}
+            </div>
+
+            {/* Hyperlocal Delivery Location Selector Pill */}
+            <button
+              onClick={openLocationModal}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full border border-[#EFE7E1] bg-white hover:border-burgundy/40 hover:bg-[#FAF8F6] text-left transition-all duration-150 shadow-sm shrink-0"
+              title="Change Delivery Location"
+            >
+              <MapPin className="w-3.5 h-3.5 text-burgundy shrink-0" />
+              <span className="text-xs font-semibold text-charcoal truncate max-w-[150px]">
+                {selectedArea || `Gokulam, Mysuru`}
+              </span>
+              <ChevronDown className="w-3 h-3 text-muted shrink-0" />
+            </button>
           </div>
 
           {/* 4. USER ACTIONS (ACCOUNT, WISHLIST, BAG) */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             
             {/* Account Menu */}
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-1.5 p-2 rounded-md hover:bg-blush/60 text-charcoal text-xs font-medium transition-colors"
+                className="p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
                 title="Account Menu"
               >
-                <div className="w-7 h-7 rounded-full bg-warmcream border border-border flex items-center justify-center text-charcoal group-hover:border-rose">
-                  <User className="w-3.5 h-3.5 text-berry" />
-                </div>
-                <div className="hidden md:flex flex-col text-left leading-tight">
-                  <span className="text-[10px] text-muted">Hello,</span>
-                  <span className="text-xs font-bold text-charcoal">
-                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
-                  </span>
-                </div>
-                <ChevronDown className="w-3 h-3 text-muted hidden md:inline" />
+                <User className="w-5 h-5" />
               </button>
 
               {isUserMenuOpen && (
@@ -505,34 +479,29 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Wishlist */}
             <button
               onClick={() => onNavigate('/account/wishlist')}
-              className="relative p-2 rounded-md hover:bg-blush/60 text-charcoal transition-colors"
+              className="relative p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
               title="Wishlist"
             >
-              <Heart className="w-5 h-5 text-charcoal hover:text-rose transition-colors" />
+              <Heart className="w-5 h-5" />
               {wishlistIds.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-rose text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-sm">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-burgundy text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-sm">
                   {wishlistIds.length}
                 </span>
               )}
             </button>
 
-            {/* Cart / Shopping Bag Button */}
+            {/* Shopping Bag with Solid Burgundy Badge */}
             <button
               onClick={openCartDrawer}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-md bg-berry hover:bg-berry-dark text-white active:scale-95 transition-all duration-150 shadow-sm"
+              className="relative p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
               title="Shopping Bag"
             >
-              <div className="relative">
-                <ShoppingBag className="w-4 h-4 text-white" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-coral text-charcoal text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm animate-bounce">
-                    {itemCount}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-bold tracking-wide hidden sm:inline">
-                Bag {itemCount > 0 && `(${itemCount})`}
-              </span>
+              <ShoppingBag className="w-5 h-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-burgundy text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
+                  {itemCount}
+                </span>
+              )}
             </button>
 
             {/* Mobile Menu Button */}
@@ -545,18 +514,17 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
           </div>
         </div>
 
-        {/* 5. MULTI-LEVEL CATEGORY NAVIGATION ROW + MEGA MENU */}
-        <nav className="hidden md:flex items-center justify-between border-t border-border py-2.5 text-xs font-medium tracking-wide relative">
-          <div className="flex items-center gap-7">
+        {/* 5. CATEGORY NAVIGATION BAR (EXACT 8 CATEGORIES FROM REFERENCE) */}
+        <nav className="hidden md:flex items-center justify-between border-t border-[#F0EAE8] py-2.5 text-xs font-medium tracking-wide relative">
+          <div className="flex items-center gap-6 lg:gap-8">
             
-            {/* Shop All */}
+            {/* All Categories Dropdown Trigger */}
             <button
               onClick={() => onNavigate('/shop')}
-              className={`hover:text-rose transition-colors uppercase text-[11px] font-bold tracking-wider ${
-                currentRoute === '/shop' ? 'text-berry font-extrabold border-b-2 border-berry pb-0.5' : 'text-charcoal'
-              }`}
+              className="flex items-center gap-1.5 text-xs font-bold text-charcoal hover:text-burgundy transition-colors"
             >
-              Shop All
+              <Menu className="w-4 h-4" />
+              <span>All Categories</span>
             </button>
 
             {/* Skincare with Mega Menu */}
@@ -567,12 +535,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/skincare')}
-                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
-                  currentRoute.includes('skincare') ? 'text-rose font-bold' : 'text-charcoal'
+                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('skincare') ? 'text-burgundy font-bold' : 'text-charcoal'
                 }`}
               >
                 <span>Skincare</span>
-                <ChevronDown className="w-3 h-3 text-muted" />
               </button>
             </div>
 
@@ -584,12 +551,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/makeup')}
-                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
-                  currentRoute.includes('makeup') ? 'text-rose font-bold' : 'text-charcoal'
+                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('makeup') ? 'text-burgundy font-bold' : 'text-charcoal'
                 }`}
               >
                 <span>Makeup</span>
-                <ChevronDown className="w-3 h-3 text-muted" />
               </button>
             </div>
 
@@ -601,16 +567,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/haircare')}
-                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
-                  currentRoute.includes('haircare') ? 'text-rose font-bold' : 'text-charcoal'
+                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('haircare') ? 'text-burgundy font-bold' : 'text-charcoal'
                 }`}
               >
                 <span>Haircare</span>
-                <ChevronDown className="w-3 h-3 text-muted" />
               </button>
             </div>
 
-            {/* Fragrance with Mega Menu */}
+            {/* Fragrance */}
             <div 
               className="relative py-1"
               onMouseEnter={() => handleMegaMenuEnter('fragrance')}
@@ -618,50 +583,47 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/fragrance')}
-                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
-                  currentRoute.includes('fragrance') ? 'text-rose font-bold' : 'text-charcoal'
+                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('fragrance') ? 'text-burgundy font-bold' : 'text-charcoal'
                 }`}
               >
                 <span>Fragrance</span>
-                <ChevronDown className="w-3 h-3 text-muted" />
               </button>
             </div>
 
-            {/* Body Care */}
+            {/* Bath & Body */}
             <button
-              onClick={() => onNavigate('/category/body-care')}
-              className={`hover:text-rose transition-colors text-xs font-semibold ${
-                currentRoute.includes('body-care') ? 'text-rose font-bold' : 'text-charcoal'
+              onClick={() => onNavigate('/category/bath-body')}
+              className={`hover:text-burgundy transition-colors text-xs font-medium ${
+                currentRoute.includes('bath-body') ? 'text-burgundy font-bold' : 'text-charcoal'
               }`}
             >
-              Body Care
+              Bath & Body
             </button>
 
-            {/* Sunscreen */}
+            {/* Beauty Tools */}
             <button
-              onClick={() => onNavigate('/category/sunscreen')}
-              className={`hover:text-rose transition-colors text-xs font-semibold ${
-                currentRoute.includes('sunscreen') ? 'text-rose font-bold' : 'text-charcoal'
+              onClick={() => onNavigate('/category/beauty-tools')}
+              className={`hover:text-burgundy transition-colors text-xs font-medium ${
+                currentRoute.includes('beauty-tools') ? 'text-burgundy font-bold' : 'text-charcoal'
               }`}
             >
-              Sunscreen
+              Beauty Tools
             </button>
 
-            {/* New Arrivals */}
+            {/* Brands */}
             <button
               onClick={() => onNavigate('/shop')}
-              className="hover:text-rose transition-colors text-xs font-semibold text-charcoal flex items-center gap-1"
+              className="hover:text-burgundy transition-colors text-xs font-medium text-charcoal"
             >
-              <span>New Arrivals</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-coral inline-block"></span>
+              Brands
             </button>
 
             {/* Offers */}
             <button
               onClick={() => onNavigate('/offers')}
-              className="hover:text-rose transition-colors text-xs font-extrabold text-rose flex items-center gap-1"
+              className="hover:text-burgundy transition-colors text-xs font-semibold text-burgundy flex items-center gap-1"
             >
-              <Tag className="w-3.5 h-3.5" />
               <span>Offers</span>
             </button>
 

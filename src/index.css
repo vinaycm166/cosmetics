@@ -3,32 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #FFF9F4; /* Warm Cream */
-  --text-primary: #29242A; /* Charcoal */
-  --text-muted: #756D77;
-  --brand-berry: #721C46; /* Berry */
-  --brand-rose: #E84F87; /* Rose Pink */
-  --brand-coral: #FF8A75; /* Coral */
-  --brand-blush: #FFF0F5; /* Blush */
-  --brand-lavender: #E9E1FF; /* Lavender */
-  --brand-warmcream: #FFF9F4; /* Warm cream */
-  --border-color: #EFE7E1;
-  --sale-accent: #E84F87;
-  --success-color: #267653;
+  --bg-primary: #FCFAF9; /* Soft Warm White */
+  --text-primary: #1E181B; /* Luxe Charcoal */
+  --text-muted: #665C60;
+  --brand-burgundy: #581227; /* Official Deep Wine Burgundy */
+  --brand-berry: #581227;
+  --brand-rose: #C94A75;
+  --brand-coral: #E66952;
+  --brand-blush: #FDF2F4;
+  --brand-lavender: #E9E1FF;
+  --brand-warmcream: #FAF6F4;
+  --border-color: #F0EAE8;
+  --sale-accent: #581227;
+  --success-color: #137333;
 }
 
 @layer base {
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     color: var(--text-primary);
     font-weight: 700;
     letter-spacing: -0.015em;
@@ -41,42 +42,42 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFF9F4;
+  background: #FCFAF9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #DFD5CD;
+  background: #E5DDD9;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8ABA0;
+  background: #C4B9B4;
 }
 
 /* Accessible focus rings */
 :focus-visible {
-  outline: 2px solid var(--brand-rose);
+  outline: 2px solid #581227;
   outline-offset: 2px;
 }
 
 /* Pre-styled e-commerce UI components */
 .dew-btn-primary {
-  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
-  background-color: #E84F87;
+  @apply inline-flex items-center justify-center font-bold text-xs tracking-wide px-5 py-2.5 rounded-lg text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #581227;
 }
 .dew-btn-primary:hover {
-  background-color: #D0326D;
-  box-shadow: 0 4px 12px rgba(232, 79, 135, 0.25);
+  background-color: #430C1D;
+  box-shadow: 0 4px 12px rgba(88, 18, 39, 0.25);
 }
 .dew-btn-primary:active {
-  background-color: #721C46;
+  background-color: #350916;
 }
 
 .dew-btn-berry {
-  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
-  background-color: #721C46;
+  @apply inline-flex items-center justify-center font-bold text-xs tracking-wide px-5 py-2.5 rounded-lg text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #581227;
 }
 .dew-btn-berry:hover {
-  background-color: #561434;
-  box-shadow: 0 4px 12px rgba(114, 28, 70, 0.3);
+  background-color: #430C1D;
+  box-shadow: 0 4px 12px rgba(88, 18, 39, 0.25);
 }
 
 .dew-btn-secondary {

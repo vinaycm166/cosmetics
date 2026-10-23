@@ -112,51 +112,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
       </nav>
 
       {/* Main Product Stage Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
-        {/* Left: Product Stage (Toggleable Studio Photography vs Interactive 3D Canvas) */}
-        <div className="lg:col-span-6 space-y-4">
+        {/* Left: Product Stage (Vertical Thumbnails + Main Packshot matching Reference Image) */}
+        <div className="lg:col-span-6 flex flex-col sm:flex-row gap-4">
           
-          {/* Main Packshot Stage */}
-          <div className="relative aspect-square w-full rounded-3xl bg-[#FAF7F4] border border-[#EFE7E1] overflow-hidden flex items-center justify-center shadow-card animate-fade-in group p-4 sm:p-8">
-            <ProductImage
-              src={selectedImage || product.images[0]}
-              alt={product.name}
-              brand={product.brand}
-              category={product.category}
-              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-104"
-            />
-            
-            {/* Discount Badge */}
-            {discount && discount > 0 ? (
-              <span className="absolute top-4 left-4 glass-pill px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest text-sale shadow-subtle border border-sale/20">
-                {discount}% OFF
-              </span>
-            ) : null}
-
-            {/* Wishlist Button */}
-            <button
-              onClick={() => toggleWishlist(product.id)}
-              aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-              className={`absolute top-4 right-4 p-2.5 rounded-full border border-border transition-all shadow-subtle ${
-                wishlisted ? 'bg-rose text-white scale-105' : 'bg-white/90 text-charcoal/60 hover:text-rose hover:bg-white'
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${wishlisted ? 'fill-white' : ''}`} />
-            </button>
-          </div>
-
-          {/* Gallery Thumbnails */}
+          {/* Vertical Gallery Thumbnails */}
           {product.images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-1">
+            <div className="flex sm:flex-col gap-2.5 order-2 sm:order-1 overflow-x-auto sm:overflow-visible shrink-0">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 rounded-2xl border bg-[#FAF7F4] p-1.5 transition-all shrink-0 overflow-hidden ${
-                    selectedImage === img 
-                      ? 'border-berry ring-2 ring-berry/20 shadow-subtle' 
-                      : 'border-[#EFE7E1] hover:border-neutral-400'
+                  className={`w-16 h-16 sm:w-18 sm:h-18 rounded-xl border bg-white p-1 transition-all overflow-hidden ${
+                    (selectedImage === img || (!selectedImage && idx === 0))
+                      ? 'border-burgundy ring-1 ring-burgundy/30 shadow-2xs' 
+                      : 'border-[#F0EAE8] hover:border-neutral-400'
                   }`}
                 >
                   <ProductImage 
@@ -170,187 +141,192 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
               ))}
             </div>
           )}
+
+          {/* Main Packshot Stage */}
+          <div className="relative aspect-square w-full rounded-2xl bg-[#FAFAF9] border border-[#F0EAE8] overflow-hidden flex items-center justify-center shadow-2xs group p-6 order-1 sm:order-2 flex-1">
+            <ProductImage
+              src={selectedImage || product.images[0]}
+              alt={product.name}
+              brand={product.brand}
+              category={product.category}
+              className="w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+            />
+            
+            {/* Bestseller Badge (Peach background matching reference image) */}
+            {product.isBestseller && (
+              <span className="absolute top-3 left-3 bg-[#FEF3EB] text-[#C25E1A] px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide">
+                Bestseller
+              </span>
+            )}
+
+            {/* Wishlist Button */}
+            <button
+              onClick={() => toggleWishlist(product.id)}
+              aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+              className={`absolute top-3 right-3 p-2 rounded-full border border-[#F0EAE8] bg-white transition-all shadow-2xs ${
+                wishlisted ? 'text-burgundy' : 'text-neutral-400 hover:text-burgundy'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${wishlisted ? 'fill-burgundy text-burgundy' : ''}`} />
+            </button>
+          </div>
         </div>
 
         {/* Right: Product Purchase Controls & Formulation Details */}
-        <div className="lg:col-span-6 space-y-6">
+        <div className="lg:col-span-6 space-y-4">
           
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-berry">
-                {product.brand}
-              </span>
-              <div className="flex items-center gap-1 bg-[#FAF7F4] px-2 py-0.5 rounded-md border border-[#EFE7E1]">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-charcoal font-black text-xs">{product.rating.toFixed(1)}</span>
-                {product.reviewCount ? (
-                  <span className="text-muted text-[10px]">({product.reviewCount} verified reviews)</span>
-                ) : null}
-              </div>
-            </div>
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal">
+              {product.brand}
+            </span>
 
-            <h1 className="font-editorial text-3xl sm:text-4xl lg:text-5xl text-charcoal leading-tight">
+            <h1 className="font-editorial text-3xl sm:text-4xl font-bold text-charcoal leading-tight">
               {product.name}
             </h1>
 
-            <p className="text-xs sm:text-sm text-charcoal/70 leading-relaxed font-sans pt-1">
-              {product.shortDescription || product.description}
+            <p className="text-xs text-muted">
+              {selectedVariant.variantName || 'Standard formulation'}
             </p>
+
+            {/* Star Rating */}
+            <div className="flex items-center gap-1.5 pt-1 text-xs">
+              <div className="flex text-amber-400">
+                {'★'.repeat(Math.round(product.rating))}
+              </div>
+              <span className="font-bold text-charcoal text-xs">{product.rating.toFixed(1)}</span>
+              <span className="text-muted text-[11px]">({product.reviewCount || 124} reviews)</span>
+            </div>
           </div>
 
-          {/* Pricing Row */}
-          <div className="pt-2 border-t border-[#EFE7E1] flex items-baseline gap-3">
-            <span className="text-3xl font-black text-charcoal">
+          {/* Pricing Row with Mint Discount Tag */}
+          <div className="pt-2 border-t border-[#F0EAE8] flex items-center gap-2.5 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-extrabold text-charcoal">
               ₹{price}
             </span>
             {originalPrice && originalPrice > price && (
-              <span className="text-base text-muted line-through font-medium">
+              <span className="text-sm text-muted line-through">
                 ₹{originalPrice}
               </span>
             )}
             {discount && discount > 0 && (
-              <span className="text-xs font-bold text-sale bg-rose/10 px-2.5 py-0.5 rounded-full border border-sale/20">
-                Save ₹{originalPrice! - price} ({discount}% off)
+              <span className="text-xs font-bold bg-[#E8F7EE] text-[#137333] px-2 py-0.5 rounded">
+                {discount}% OFF
               </span>
             )}
-          </div>
-          <p className="text-[11px] text-muted -mt-3">
-            Prices inclusive of all taxes. Free 15-minute climate-controlled delivery on orders ₹499+.
-          </p>
-
-          {/* Cold-Pack Delivery ETA Notice */}
-          <div className="p-3.5 rounded-2xl bg-[#FCF8F5] border border-[#EFE7E1] flex items-center justify-between text-xs shadow-subtle">
-            <div className="flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-berry shrink-0" />
-              <span>
-                {isServiceable ? (
-                  <>Dispatched from Gokulam Hub to <b>{selectedArea}</b> in ~{estimatedDeliveryMinutes} mins</>
-                ) : (
-                  <>Hyperlocal service check for {selectedArea}</>
-                )}
-              </span>
-            </div>
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              {isServiceable ? 'Express Ready' : 'Standard'}
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded ml-1">
+              • In Stock
             </span>
           </div>
 
-          {/* Variant Selector */}
-          <div className="space-y-2">
-            <label className="block text-[11px] font-extrabold uppercase tracking-widest text-charcoal">
-              Formulation / Size:
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {product.variants.map((variant) => (
-                <button
-                  key={variant.id}
-                  onClick={() => setSelectedVariant(variant)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                    selectedVariant.id === variant.id
-                      ? 'border-berry bg-berry text-white shadow-subtle'
-                      : 'border-[#EFE7E1] bg-white text-charcoal hover:border-berry/40'
-                  }`}
-                >
-                  {variant.variantName} • ₹{variant.price}
-                </button>
-              ))}
-            </div>
-            <div className="text-[11px] text-muted flex items-center gap-2 pt-1 font-medium">
-              <span>SKU: {selectedVariant.sku}</span>
-              <span>•</span>
-              <span className={inStock ? 'text-emerald-700 font-bold' : 'text-sale font-bold'}>
-                {inStock ? `In Stock (${availableStock} units fresh)` : 'Currently Out of Stock'}
-              </span>
-            </div>
-          </div>
+          {/* Description Excerpt */}
+          <p className="text-xs text-charcoal/75 leading-relaxed pt-1">
+            {product.shortDescription || product.description}
+          </p>
 
-          {/* Stepper & Primary Add to Bag Actions */}
-          <div className="space-y-3 pt-2">
+          {/* Stepper & Primary Actions */}
+          <div className="pt-2 space-y-3">
             <div className="flex items-center gap-3">
               {/* Stepper */}
-              <div className="flex items-center rounded-xl border border-[#EFE7E1] bg-white shadow-subtle">
+              <div className="flex items-center rounded-lg border border-[#EFE7E1] bg-white shadow-2xs">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-9 h-9 flex items-center justify-center text-charcoal hover:bg-neutral-100 rounded-l-xl transition-colors"
+                  className="w-9 h-9 flex items-center justify-center text-charcoal hover:bg-neutral-100 rounded-l-lg transition-colors"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-9 text-center text-xs font-black text-charcoal">
+                <span className="w-8 text-center text-xs font-bold text-charcoal">
                   {quantity}
                 </span>
                 <button
                   onClick={() => setQuantity(Math.min(availableStock, quantity + 1))}
                   disabled={quantity >= availableStock}
-                  className="w-9 h-9 flex items-center justify-center text-charcoal hover:bg-neutral-100 rounded-r-xl transition-colors disabled:opacity-30"
+                  className="w-9 h-9 flex items-center justify-center text-charcoal hover:bg-neutral-100 rounded-r-lg transition-colors disabled:opacity-30"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Add to Bag */}
+              {/* Add to Cart Button (Solid Burgundy) */}
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock}
-                className="flex-1 dew-btn-berry !py-3.5 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-3d-float"
+                className="flex-1 py-2.5 px-5 rounded-lg bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
               >
                 {addedNotice ? (
                   <>
-                    <Check className="w-4 h-4 stroke-[2.5]" />
-                    <span>Added to Bag</span>
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Added to Cart</span>
                   </>
                 ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>{inStock ? `Add to Bag • ₹${price * quantity}` : 'Out of Stock'}</span>
-                  </>
+                  <span>Add to Cart</span>
                 )}
               </button>
+            </div>
 
-              {/* Buy Now */}
-              <button
-                onClick={handleBuyNow}
-                disabled={!inStock}
-                className="glass-pill hover:bg-white text-charcoal !py-3.5 !px-6 rounded-xl text-xs font-black uppercase tracking-wider border border-[#EFE7E1] transition-all"
-              >
-                Buy Now
-              </button>
+            {/* Buy Now Button */}
+            <button
+              onClick={handleBuyNow}
+              disabled={!inStock}
+              className="w-full py-2.5 px-4 rounded-lg bg-[#FBECEB] hover:bg-[#F7D8D7] text-burgundy text-xs font-bold transition-colors shadow-2xs"
+            >
+              Buy Now
+            </button>
+          </div>
+
+          {/* 4 Trust Bullets (Matching Reference Image) */}
+          <div className="pt-4 border-t border-[#F0EAE8] space-y-2 text-xs text-charcoal/80">
+            <div className="flex items-center gap-2">
+              <span>🚚</span>
+              <span>Free delivery in Gokulam, Mysuru</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>🛡️</span>
+              <span>100% Authentic Product</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>🔄</span>
+              <span>Easy Returns</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>💳</span>
+              <span>Secure Payments</span>
             </div>
           </div>
 
           {/* Formula Transparency Tabs */}
-          <div className="pt-4 border-t border-[#EFE7E1]">
-            <div className="flex border-b border-[#EFE7E1] gap-6 text-xs font-bold">
+          <div className="pt-4 border-t border-[#F0EAE8]">
+            <div className="flex border-b border-[#F0EAE8] gap-6 text-xs font-semibold">
               <button
                 onClick={() => setActiveTab('benefits')}
-                className={`pb-2.5 transition-all ${
-                  activeTab === 'benefits' ? 'border-b-2 border-berry text-berry font-black' : 'text-muted hover:text-charcoal'
+                className={`pb-2 transition-all ${
+                  activeTab === 'benefits' ? 'border-b-2 border-burgundy text-burgundy font-bold' : 'text-muted hover:text-charcoal'
                 }`}
               >
-                Clinical Benefits
+                Description
               </button>
               <button
                 onClick={() => setActiveTab('ingredients')}
-                className={`pb-2.5 transition-all ${
-                  activeTab === 'ingredients' ? 'border-b-2 border-berry text-berry font-black' : 'text-muted hover:text-charcoal'
+                className={`pb-2 transition-all ${
+                  activeTab === 'ingredients' ? 'border-b-2 border-burgundy text-burgundy font-bold' : 'text-muted hover:text-charcoal'
                 }`}
               >
-                Verified Ingredients
+                Ingredients
               </button>
               <button
                 onClick={() => setActiveTab('howToUse')}
-                className={`pb-2.5 transition-all ${
-                  activeTab === 'howToUse' ? 'border-b-2 border-berry text-berry font-black' : 'text-muted hover:text-charcoal'
+                className={`pb-2 transition-all ${
+                  activeTab === 'howToUse' ? 'border-b-2 border-burgundy text-burgundy font-bold' : 'text-muted hover:text-charcoal'
                 }`}
               >
-                Application Protocol
+                How to Use
               </button>
               <button
                 onClick={() => setActiveTab('safety')}
-                className={`pb-2.5 transition-all ${
-                  activeTab === 'safety' ? 'border-b-2 border-berry text-berry font-black' : 'text-muted hover:text-charcoal'
+                className={`pb-2 transition-all ${
+                  activeTab === 'safety' ? 'border-b-2 border-burgundy text-burgundy font-bold' : 'text-muted hover:text-charcoal'
                 }`}
               >
-                Dermatology & Skin Type
+                Reviews
               </button>
             </div>
 

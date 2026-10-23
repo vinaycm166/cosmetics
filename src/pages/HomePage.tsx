@@ -1,323 +1,177 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { 
   ArrowRight, 
-  Clock, 
   ShieldCheck, 
-  Sparkles, 
-  Star, 
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  Flame,
-  Zap,
-  ShoppingBag,
-  Award,
-  Layers,
-  Droplets,
-  Sun
+  RotateCcw, 
+  CreditCard, 
+  Zap, 
+  Bike, 
+  Check, 
+  Percent,
+  Sparkles
 } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
-import { ProductImage } from '../components/common/ProductImage';
 import { store } from '../lib/store';
 import { useLocation } from '../context/LocationContext';
-import { useCart } from '../context/CartContext';
-import { Product } from '../types';
 
 interface HomePageProps {
   onNavigate: (route: string) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-  const { isServiceable, estimatedDeliveryMinutes, selectedArea, openLocationModal } = useLocation();
-  const { addToCart } = useCart();
-
+  const { selectedArea, openLocationModal } = useLocation();
   const allProducts = store.getPublishedProducts();
-  const categories = store.getCategories();
 
-  // Curated collections from real catalog
-  const bestsellers = allProducts.filter(p => p.isBestseller);
-  const trendingProducts = allProducts.filter(p => p.isTrending || p.isBestseller);
-  const newArrivals = allProducts.filter(p => p.isNewArrival);
+  // The 5 flagship bestsellers matching reference image
+  const flagshipBestsellers = [
+    allProducts.find(p => p.id === 'prod-cerave-hydrating') || allProducts[0],
+    allProducts.find(p => p.id === 'prod-minimalist-nia') || allProducts[1],
+    allProducts.find(p => p.id === 'prod-loreal-revitalift') || allProducts[2],
+    allProducts.find(p => p.id === 'prod-maybelline-skyhigh') || allProducts[3],
+    allProducts.find(p => p.id === 'prod-ordinary-ha') || allProducts[4],
+  ].filter(Boolean);
 
-  // Active Category Filter for Bestsellers Section
-  const [bestsellerCategory, setBestsellerCategory] = useState<string>('all');
-
-  // Filtered bestsellers based on tab
-  const displayedBestsellers = bestsellers.filter(p => {
-    if (bestsellerCategory === 'all') return true;
-    return p.category.toLowerCase().includes(bestsellerCategory.toLowerCase());
-  }).slice(0, 8);
-
-  // Hero Routine Preset Switcher State with Authentic Product Photography
-  const [heroRoutine, setHeroRoutine] = useState<number>(0);
-  const heroRoutines = [
+  // 8 Circular Categories matching reference image
+  const categoryCircles = [
     {
-      title: 'The Barrier Recovery Edit',
-      subtitle: '5 Biomimetic Ceramides, Oat Beta-Glucan & Peptides to rebuild stressed skin barrier in 24 hours.',
-      badge: 'Clinically Proven Actives',
-      tag: 'Morning & Night Protocol',
+      name: 'Skincare',
       route: '/category/skincare',
-      accent: '#721C46',
-      image: 'https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=1000&q=85',
-      featuredProduct: allProducts.find(p => p.name.includes('Barrier') || p.name.includes('Ceramide')) || allProducts[0]
+      image: 'https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=200&q=80',
     },
     {
-      title: 'The High-Shine Peptide Glaze',
-      subtitle: 'Effortless liquid color tints and cushioning lip oils infused with botanical antioxidants for all-day luminous skin.',
-      badge: 'Clean & Cruelty-Free',
-      tag: 'Glass Skin Signature',
+      name: 'Makeup',
       route: '/category/makeup',
-      accent: '#E84F87',
-      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=1000&q=85',
-      featuredProduct: allProducts.find(p => p.name.includes('Lip') || p.category.toLowerCase().includes('lip') || p.category.toLowerCase().includes('makeup')) || allProducts[1]
+      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=200&q=80',
     },
     {
-      title: 'Cellular Radiance Lift',
-      subtitle: 'Pure 10% Niacinamide + Zinc PCA with weightless Hyaluronic matrix for pore refining and deep glow.',
-      badge: 'Cold-Dispatched Potency',
-      tag: 'Active Skin Defense',
-      route: '/category/skincare',
-      accent: '#D4AF37',
-      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85',
-      featuredProduct: allProducts.find(p => p.name.includes('Niacinamide') || p.name.includes('Serum')) || allProducts[2]
-    }
+      name: 'Haircare',
+      route: '/category/haircare',
+      image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=200&q=80',
+    },
+    {
+      name: 'Fragrance',
+      route: '/category/fragrance',
+      image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=200&q=80',
+    },
+    {
+      name: 'Bath & Body',
+      route: '/category/bath-body',
+      image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=200&q=80',
+    },
+    {
+      name: 'Beauty Tools',
+      route: '/category/beauty-tools',
+      image: 'https://images.unsplash.com/photo-1608248597359-00a4025a4980?auto=format&fit=crop&w=200&q=80',
+    },
+    {
+      name: 'New Arrivals',
+      route: '/shop',
+      image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=200&q=80',
+    },
+    {
+      name: 'Offers',
+      route: '/offers',
+      isOfferBadge: true,
+    },
   ];
-
-  // Routine Step Builder State (Cleanse -> Treat -> Hydrate -> Protect)
-  const [activeRoutineStep, setActiveRoutineStep] = useState<number>(0);
-  const routineSteps = [
-    {
-      step: '01',
-      name: 'Cleanse & Reset',
-      desc: 'Gentle amino-acid foaming gel that cleanses impurities without stripping the protective moisture barrier.',
-      categoryMatch: 'Cleansers',
-      heroProd: allProducts.find(p => p.category.toLowerCase().includes('cleanse')) || allProducts[0]
-    },
-    {
-      step: '02',
-      name: 'Targeted Serum',
-      desc: 'Concentrated 10% Niacinamide + 1% Zinc to normalize sebum production and brighten stubborn hyperpigmentation.',
-      categoryMatch: 'Serums',
-      heroProd: allProducts.find(p => p.category.toLowerCase().includes('serum')) || allProducts[1] || allProducts[0]
-    },
-    {
-      step: '03',
-      name: 'Ceramide Seal',
-      desc: 'Deep lipid infusion with 5 essential ceramides and plant squalane to lock in hydration for up to 48 hours.',
-      categoryMatch: 'Moisturizers',
-      heroProd: allProducts.find(p => p.category.toLowerCase().includes('cream') || p.category.toLowerCase().includes('moistur')) || allProducts[2] || allProducts[0]
-    },
-    {
-      step: '04',
-      name: 'Aqueous UV Shield',
-      desc: 'Broad spectrum PA++++ SPF 50 fluid with ultra-light texture, zero white cast and sweat resistance.',
-      categoryMatch: 'Sunscreen',
-      heroProd: allProducts.find(p => p.category.toLowerCase().includes('sun')) || allProducts[3] || allProducts[0]
-    }
-  ];
-
-  // Trending Horizontal Scroll Ref
-  const trendingScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollTrending = (direction: 'left' | 'right') => {
-    if (trendingScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -340 : 340;
-      trendingScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  // Step Add to Cart feedback
-  const [stepAdded, setStepAdded] = useState(false);
-  const handleAddStepProduct = (prod: Product) => {
-    const variant = prod.variants.find(v => v.isDefault) || prod.variants[0];
-    const res = addToCart(prod, variant, 1);
-    if (res.success) {
-      setStepAdded(true);
-      setTimeout(() => setStepAdded(false), 1600);
-    }
-  };
 
   return (
-    <div className="space-y-20 sm:space-y-32 pb-24 overflow-x-hidden">
+    <div className="space-y-12 sm:space-y-16 pb-20 overflow-x-hidden bg-[#FCFAF9]">
       
       {/* ========================================================
-          1. CINEMATIC 3D HERO SECTION (LUXURY EDITORIAL)
+          1. HERO SECTION (MATCHING REFERENCE IMAGE)
       ======================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#FCFAF7] via-[#FFF9F4] to-white border-b border-[#EFE7E1] pt-4 lg:pt-8">
-        
-        {/* Ambient atmospheric luxury glow */}
-        <div className="absolute top-12 left-1/4 w-[600px] h-[600px] rounded-full bg-blush/80 blur-[130px] pointer-events-none" />
-        <div className="absolute top-48 right-10 w-[500px] h-[500px] rounded-full bg-champagne-100/50 blur-[140px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+      <section className="relative overflow-hidden bg-gradient-to-r from-[#FAF5F2] via-[#FDF7F5] to-[#F5ECE8] border-b border-[#F0EAE8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Left: High-Fashion Editorial Typography & CTAs */}
+            {/* Left Column: Editorial Headline & Actions */}
             <div className="lg:col-span-6 space-y-6 text-left">
+              <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl font-bold text-charcoal leading-[1.04] tracking-tight">
+                Glow <br />
+                Confidently <br />
+                Everyday
+              </h1>
               
-              {/* Delivery Serviceability Pill */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill text-xs text-charcoal shadow-subtle">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-extrabold text-berry tracking-wider uppercase text-[10px]">
-                  {isServiceable ? `15-Min Delivery • ~${estimatedDeliveryMinutes} mins:` : 'Express Dispatch:'}
-                </span>
+              <p className="text-sm sm:text-base text-charcoal/75 max-w-md font-sans leading-relaxed">
+                Authentic beauty products at your doorstep in Gokulam, Mysuru.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-1">
                 <button
-                  onClick={openLocationModal}
-                  className="text-rose font-bold hover:underline flex items-center gap-0.5"
+                  onClick={() => onNavigate('/shop')}
+                  className="px-7 py-3 rounded-full bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 group active:scale-95"
                 >
-                  <span>{selectedArea}</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Editorial Headline */}
-              <div className="space-y-3">
-                <span className="text-[11px] font-black uppercase tracking-[0.25em] text-berry/80 block">
-                  Haute Skincare & Cosmetics • Gokulam Micro-Hub
-                </span>
-                <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl text-charcoal leading-[1.02] tracking-tight">
-                  The Architecture of <br />
-                  <span className="font-editorial-italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-berry via-rose to-champagne-500">
-                    Luminous Skin.
-                  </span>
-                </h1>
-                <p className="text-sm sm:text-base text-charcoal/70 max-w-lg leading-relaxed font-sans font-normal pt-1">
-                  Active biomimetic ceramides, pure botanical elixirs, and dermatologically verified cosmetics. Dispatched fresh from our temperature-controlled Gokulam micro-hub in Mysuru.
-                </p>
-              </div>
-
-              {/* Routine Preset Pills */}
-              <div className="space-y-2 pt-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted block">
-                  Explore Curated Protocols:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {heroRoutines.map((routine, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setHeroRoutine(idx)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                        heroRoutine === idx
-                          ? 'border-berry bg-berry text-white shadow-subtle font-bold'
-                          : 'glass-pill text-charcoal/80 hover:border-berry/40'
-                      }`}
-                    >
-                      {routine.title.split(' ')[1] || routine.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-4 pt-3">
-                <button
-                  onClick={() => onNavigate(heroRoutines[heroRoutine].route)}
-                  className="dew-btn-berry !px-8 !py-4 text-xs tracking-widest uppercase font-black shadow-card hover:scale-102 transition-transform flex items-center gap-2 group"
-                >
-                  <span>Shop Routine</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <span>Shop Now</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => onNavigate('/shop')}
-                  className="glass-pill hover:bg-white text-charcoal !px-7 !py-4 rounded-xl text-xs tracking-widest uppercase font-bold border border-[#EFE7E1] shadow-subtle hover:border-berry transition-all"
+                  className="px-6 py-3 rounded-full bg-white hover:bg-[#FAF8F6] text-charcoal border border-[#EFE7E1] text-xs font-bold transition-colors shadow-2xs"
                 >
-                  Explore Catalog
+                  Explore Categories
                 </button>
               </div>
 
-              {/* Three Editorial Trust Seals (Based on Real Store Operations) */}
-              <div className="pt-6 border-t border-[#EFE7E1] grid grid-cols-3 gap-4 text-xs text-muted">
+              {/* 4 Horizontal Trust Seals */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#EFE7E1]">
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 text-berry shrink-0 stroke-[1.5]" />
-                  <div>
-                    <span className="font-bold text-charcoal text-[11px] block">100% Genuine</span>
-                    <span className="text-[10px] text-muted">Authorized Batches</span>
+                  <div className="w-8 h-8 rounded-full bg-white border border-[#F0EAE8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="font-bold text-charcoal text-[11px] block">Fast Delivery</span>
+                    <span className="text-[10px] text-muted">in Gokulam, Mysuru</span>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-2.5">
-                  <Clock className="w-5 h-5 text-berry shrink-0 stroke-[1.5]" />
-                  <div>
-                    <span className="font-bold text-charcoal text-[11px] block">~15-Min Delivery</span>
-                    <span className="text-[10px] text-muted">Gokulam Hub, Mysuru</span>
+                  <div className="w-8 h-8 rounded-full bg-white border border-[#F0EAE8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="font-bold text-charcoal text-[11px] block">100% Authentic</span>
+                    <span className="text-[10px] text-muted">Products</span>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-2.5">
-                  <Sparkles className="w-5 h-5 text-champagne-600 shrink-0 stroke-[1.5]" />
-                  <div>
-                    <span className="font-bold text-charcoal text-[11px] block">Cold-Chain Potency</span>
-                    <span className="text-[10px] text-muted">Protected Storage</span>
+                  <div className="w-8 h-8 rounded-full bg-white border border-[#F0EAE8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                    <RotateCcw className="w-4 h-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="font-bold text-charcoal text-[11px] block">Easy Returns</span>
+                    <span className="text-[10px] text-muted">& Support</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-white border border-[#F0EAE8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                    <CreditCard className="w-4 h-4" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="font-bold text-charcoal text-[11px] block">Secure Payments</span>
+                    <span className="text-[10px] text-muted">Razorpay Protected</span>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Right: Authentic Beauty Campaign Photography Stage */}
-            <div className="lg:col-span-6 relative">
-              <div className="relative aspect-square max-w-[560px] mx-auto rounded-3xl overflow-hidden glass-pill border border-[#EFE7E1] shadow-card p-3 bg-white">
+            {/* Right Column: Authentic Cosmetics Flatlay (Estée Lauder, Laneige, Clinique) */}
+            <div className="lg:col-span-6 relative flex items-center justify-center">
+              <div className="relative w-full max-w-[520px] aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFF5F2] to-[#FBECE6] border border-[#F0EAE8] shadow-card p-4 flex items-center justify-center">
                 
-                {/* Genuine Product Campaign Photography */}
-                <div className="relative w-full h-full rounded-2xl overflow-hidden bg-[#FAF7F4] flex items-center justify-center">
-                  <img
-                    src={heroRoutines[heroRoutine].image}
-                    alt={heroRoutines[heroRoutine].title}
-                    className="w-full h-full object-cover transition-all duration-700 ease-out hover:scale-103"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 via-transparent to-transparent pointer-events-none" />
-                </div>
+                {/* Genuine Product Composition Banner */}
+                <img
+                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1000&q=85"
+                  alt="Dew & Go Premium Cosmetics - Estée Lauder, Laneige, Clinique"
+                  className="w-full h-full object-cover rounded-xl"
+                />
 
-                {/* Floating Routine Information Card */}
-                <div className="absolute top-6 left-6 max-w-[280px] glass-pill p-3.5 rounded-2xl shadow-subtle border border-white/80 pointer-events-none select-none">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="w-2 h-2 rounded-full bg-rose animate-ping" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-berry">
-                      {heroRoutines[heroRoutine].tag}
-                    </span>
-                  </div>
-                  <h4 className="font-heading font-extrabold text-xs text-charcoal">
-                    {heroRoutines[heroRoutine].title}
-                  </h4>
-                  <p className="text-[10px] text-muted mt-1 line-clamp-2 leading-relaxed">
-                    {heroRoutines[heroRoutine].subtitle}
-                  </p>
-                </div>
-
-                {/* Floating Genuine Featured Product Card */}
-                {heroRoutines[heroRoutine].featuredProduct && (
-                  <div className="absolute bottom-6 inset-x-6 glass-pill p-3 rounded-2xl border border-white/90 shadow-elevated flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-xl bg-white p-1 border border-border shrink-0 overflow-hidden flex items-center justify-center">
-                        <ProductImage
-                          src={heroRoutines[heroRoutine].featuredProduct.images[0]}
-                          alt={heroRoutines[heroRoutine].featuredProduct.name}
-                          brand={heroRoutines[heroRoutine].featuredProduct.brand}
-                          category={heroRoutines[heroRoutine].featuredProduct.category}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-berry block truncate">
-                          {heroRoutines[heroRoutine].featuredProduct.brand}
-                        </span>
-                        <h5 className="font-heading font-bold text-xs text-charcoal truncate">
-                          {heroRoutines[heroRoutine].featuredProduct.name}
-                        </h5>
-                        <span className="text-xs font-black text-charcoal">
-                          ₹{heroRoutines[heroRoutine].featuredProduct.defaultPrice}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleAddStepProduct(heroRoutines[heroRoutine].featuredProduct)}
-                      className="dew-btn-berry !py-2 !px-3.5 text-[11px] font-bold tracking-wider shrink-0 flex items-center gap-1 shadow-subtle"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Quick Add</span>
-                    </button>
-                  </div>
-                )}
-
+                {/* Subtle Decorative Floral Accent */}
+                <div className="absolute -bottom-4 -right-4 w-28 h-28 bg-rose-100/60 rounded-full blur-2xl pointer-events-none" />
               </div>
             </div>
 
@@ -327,179 +181,58 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
 
       {/* ========================================================
-          2. INFINITE LUXURY EDITORIAL MARQUEE
-      ======================================================== */}
-      <div className="bg-[#29242A] py-3.5 overflow-hidden text-white border-y border-white/10 -mt-20 sm:-mt-32 relative z-20">
-        <div className="animate-marquee whitespace-nowrap flex items-center gap-8 text-xs uppercase tracking-[0.25em] font-bold">
-          <span>• CLINICALLY PROVEN ACTIVES</span>
-          <span className="text-champagne-400">★ COLD-CHAIN DISPATCHED IN 15 MINS</span>
-          <span>• 100% DERMATOLOGICALLY VERIFIED</span>
-          <span className="text-rose">★ ZERO CRUELTY • PURE BOTANICAL FORMULATIONS</span>
-          <span>• GOKULAM & JAYALAKSHMIPURAM EXPRESS HUBS</span>
-          <span className="text-champagne-400">★ 5 BIOMIMETIC CERAMIDES</span>
-          <span>• MYSURU HYPERLOCAL COMMERCE</span>
-          <span className="text-rose">★ HAUTE QUICK-COMMERCE</span>
-          <span>• TEMPERATURE-MONITORED STORAGE</span>
-          <span className="text-champagne-400">★ DISPATCHED WITHIN 15 MINS</span>
-          <span>• 100% GENUINE BATCHES</span>
-        </div>
-      </div>
-
-
-      {/* ========================================================
-          3. 4-STEP SKINCARE ARCHITECTURE ROUTINE BUILDER
+          2. 8 CIRCULAR CATEGORY NAVIGATION (MATCHING IMAGE)
       ======================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-          <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-berry">
-            The Methodical Ritual
-          </span>
-          <h2 className="font-editorial text-4xl sm:text-5xl text-charcoal tracking-tight">
-            The 4-Step Daily Routine
-          </h2>
-          <p className="text-xs sm:text-sm text-muted font-sans leading-relaxed">
-            Every step formulated to layer seamlessly without pilling or heavy residue. Click any phase to inspect the formulation.
-          </p>
-        </div>
-
-        {/* Step Tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          {routineSteps.map((s, idx) => (
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-4 sm:gap-6 text-center">
+          {categoryCircles.map((cat, idx) => (
             <button
               key={idx}
-              onClick={() => setActiveRoutineStep(idx)}
-              className={`p-4 rounded-2xl text-left border transition-all duration-300 ${
-                activeRoutineStep === idx
-                  ? 'border-berry bg-white shadow-3d-float -translate-y-1'
-                  : 'glass-pill border-[#EFE7E1] hover:border-berry/40 text-charcoal/70'
-              }`}
+              onClick={() => onNavigate(cat.route)}
+              className="flex flex-col items-center gap-2 group cursor-pointer focus:outline-none"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs font-black font-mono ${activeRoutineStep === idx ? 'text-berry' : 'text-muted'}`}>
-                  STEP {s.step}
-                </span>
-                <span className={`w-2 h-2 rounded-full ${activeRoutineStep === idx ? 'bg-berry' : 'bg-transparent'}`} />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FCEFEB] border border-[#F5E0D8] p-1.5 flex items-center justify-center shadow-2xs group-hover:scale-105 group-hover:border-burgundy/40 transition-all duration-200 overflow-hidden">
+                {cat.isOfferBadge ? (
+                  <div className="w-full h-full rounded-full bg-[#E57A82] flex items-center justify-center text-white">
+                    <span className="font-editorial text-2xl font-bold">%</span>
+                  </div>
+                ) : (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                )}
               </div>
-              <h4 className="font-heading font-extrabold text-sm text-charcoal">
-                {s.name}
-              </h4>
-              <p className="text-[11px] text-muted mt-1 line-clamp-2">
-                {s.desc}
-              </p>
+              <span className="text-xs font-semibold text-charcoal group-hover:text-burgundy transition-colors">
+                {cat.name}
+              </span>
             </button>
           ))}
         </div>
-
-        {/* Highlighted Step Feature Banner */}
-        {routineSteps[activeRoutineStep].heroProd && (
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EFE7E1] shadow-card grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            <div className="md:col-span-5 aspect-square max-w-sm mx-auto bg-[#FAF7F4] rounded-2xl p-4 flex items-center justify-center border border-[#EFE7E1] overflow-hidden">
-              <ProductImage
-                src={routineSteps[activeRoutineStep].heroProd.images[0]}
-                alt={routineSteps[activeRoutineStep].heroProd.name}
-                brand={routineSteps[activeRoutineStep].heroProd.brand}
-                category={routineSteps[activeRoutineStep].heroProd.category}
-                className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            <div className="md:col-span-7 space-y-4 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-berry/5 text-berry text-[10px] font-extrabold uppercase tracking-widest border border-berry/15">
-                <span>Phase {routineSteps[activeRoutineStep].step} Spotlight</span>
-                <span>•</span>
-                <span>{routineSteps[activeRoutineStep].categoryMatch}</span>
-              </div>
-
-              <h3 className="font-editorial text-3xl sm:text-4xl text-charcoal">
-                {routineSteps[activeRoutineStep].heroProd.name}
-              </h3>
-
-              <p className="text-xs sm:text-sm text-muted leading-relaxed font-sans max-w-xl">
-                {routineSteps[activeRoutineStep].heroProd.shortDescription || routineSteps[activeRoutineStep].heroProd.description}
-              </p>
-
-              <div className="flex items-baseline gap-3 pt-2">
-                <span className="text-2xl font-black text-charcoal">
-                  ₹{routineSteps[activeRoutineStep].heroProd.defaultPrice}
-                </span>
-                {routineSteps[activeRoutineStep].heroProd.defaultOriginalPrice && (
-                  <span className="text-sm text-muted line-through font-medium">
-                    ₹{routineSteps[activeRoutineStep].heroProd.defaultOriginalPrice}
-                  </span>
-                )}
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  Ready for 15-Min Cold Dispatch
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 pt-4">
-                <button
-                  onClick={() => handleAddStepProduct(routineSteps[activeRoutineStep].heroProd)}
-                  className="dew-btn-berry !py-3 !px-7 text-xs font-black tracking-wider uppercase flex items-center gap-2 shadow-subtle"
-                >
-                  {stepAdded ? (
-                    <>
-                      <Check className="w-4 h-4 stroke-[2.5]" />
-                      <span>Added to Bag</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>Add Step {routineSteps[activeRoutineStep].step} to Bag</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => onNavigate(`/product/${routineSteps[activeRoutineStep].heroProd.slug}`)}
-                  className="px-5 py-3 rounded-xl border border-[#EFE7E1] hover:border-berry text-charcoal text-xs font-bold transition-colors"
-                >
-                  View Full Formula
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
 
       {/* ========================================================
-          4. BESTSELLERS SHOWCASE WITH 3D TACTILE CARDS
+          3. BESTSELLERS SECTION (5 COLUMNS MATCHING IMAGE)
       ======================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-berry">
-              Proven Formulations
-            </span>
-            <h2 className="font-editorial text-4xl sm:text-5xl text-charcoal tracking-tight mt-1">
-              Cult Bestsellers
-            </h2>
-            <p className="text-xs text-muted mt-1 font-sans">
-              The everyday skincare and clean color formulations our community re-orders most.
-            </p>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 glass-pill p-1.5 rounded-full shadow-subtle">
-            {['all', 'serum', 'cream', 'cleanse', 'makeup', 'sun'].map((catKey) => (
-              <button
-                key={catKey}
-                onClick={() => setBestsellerCategory(catKey)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all capitalize ${
-                  bestsellerCategory === catKey
-                    ? 'bg-berry text-white shadow-subtle'
-                    : 'text-charcoal/70 hover:text-charcoal'
-                }`}
-              >
-                {catKey === 'all' ? 'All Formulations' : catKey}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#F0EAE8]">
+          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-charcoal tracking-tight">
+            Bestsellers
+          </h2>
+          <button
+            onClick={() => onNavigate('/shop')}
+            className="text-xs font-bold text-burgundy hover:underline flex items-center gap-1"
+          >
+            <span>View All</span>
+            <span>→</span>
+          </button>
         </div>
 
-        {/* 3D Tactile Product Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {displayedBestsellers.map(product => (
+        {/* 5-Column Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
+          {flagshipBestsellers.map(product => (
             <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
           ))}
         </div>
@@ -507,111 +240,81 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
 
       {/* ========================================================
-          5. EDITORIAL SPLIT SPREAD: COLD-CHAIN DISPATCH
+          4. DUAL EDITORIAL PROMOTIONAL BANNERS (MATCHING IMAGE)
       ======================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#FAF7F4] rounded-4xl p-8 sm:p-14 border border-[#EFE7E1] relative overflow-hidden shadow-card">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            
-            <div className="lg:col-span-6 space-y-5 text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-champagne-600 bg-champagne-50 px-3 py-1 rounded-full border border-champagne-200">
-                The Science of Fresh Potency
-              </span>
-              <h2 className="font-editorial text-4xl sm:text-5xl text-charcoal leading-tight">
-                Why 15-Minute Cold Delivery Matters for Active Skincare.
-              </h2>
-              <p className="text-xs sm:text-sm text-charcoal/70 leading-relaxed font-sans font-normal">
-                Active vitamins (like L-Ascorbic Acid) and bio-peptides degrade when sitting in transit warehouses for days. Dew & Go operates temperature-monitored dark stores in Mysuru, dispatching within 2 minutes of checkout from our Gokulam micro-hub.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="glass-pill p-4 rounded-2xl border border-white/80 space-y-1">
-                  <span className="font-mono text-2xl font-black text-berry block">0%</span>
-                  <span className="text-xs font-bold text-charcoal block">Heat Oxidation</span>
-                  <p className="text-[10px] text-muted">Cold-pack protected delivery from hub to doorstep.</p>
-                </div>
-                <div className="glass-pill p-4 rounded-2xl border border-white/80 space-y-1">
-                  <span className="font-mono text-2xl font-black text-champagne-600 block">15m</span>
-                  <span className="text-xs font-bold text-charcoal block">Average Delivery</span>
-                  <p className="text-[10px] text-muted">Dedicated electric fleet across Gokulam & Mysuru express hubs.</p>
-                </div>
-              </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Left Banner: Skincare Essentials */}
+          <div className="relative rounded-2xl overflow-hidden bg-[#EAEFEA] border border-[#E0E7E0] p-8 sm:p-10 flex flex-col justify-between min-h-[220px] shadow-subtle group">
+            <div className="relative z-10 max-w-sm space-y-3">
+              <h3 className="font-editorial text-3xl sm:text-4xl text-charcoal font-bold leading-tight">
+                Skincare Essentials <br />
+                for Healthy, Radiant Skin
+              </h3>
               <div className="pt-2">
                 <button
-                  onClick={() => onNavigate('/shop')}
-                  className="dew-btn-berry !px-7 !py-3.5 text-xs font-black tracking-widest uppercase shadow-subtle"
+                  onClick={() => onNavigate('/category/skincare')}
+                  className="px-5 py-2.5 rounded-lg bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1.5"
                 >
-                  Shop Cold-Dispatched Formulations
+                  <span>Shop Skincare</span>
+                  <span>→</span>
                 </button>
               </div>
             </div>
 
-            <div className="lg:col-span-6 relative">
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-3d-float border border-white/60 relative">
-                <img
-                  src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80"
-                  alt="Dew & Go Formulation Inspection"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent flex items-end p-6">
-                  <span className="font-editorial text-xl text-white italic">
-                    Precision Formulated • Hyperlocal Delivery
-                  </span>
+            {/* Botanical Packshot Photography */}
+            <div className="absolute right-0 bottom-0 top-0 w-1/2 opacity-90 pointer-events-none overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=600&q=80"
+                alt="Skincare Essentials"
+                className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          </div>
+
+          {/* Right Banner: Same-Day Delivery in Gokulam, Mysuru */}
+          <div className="relative rounded-2xl overflow-hidden bg-burgundy text-white p-8 sm:p-10 flex flex-col justify-between min-h-[220px] shadow-card group">
+            
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white">
+                  <Bike className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-editorial text-2xl sm:text-3xl font-bold leading-snug">
+                    Same-Day Delivery in Gokulam, Mysuru
+                  </h3>
+                </div>
+              </div>
+
+              {/* 3 Checkmarks */}
+              <div className="space-y-2 text-xs font-medium text-white/90 pt-1">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-rose-300 stroke-[3]" />
+                  <span>Authentic Products</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-rose-300 stroke-[3]" />
+                  <span>Carefully Packed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-rose-300 stroke-[3]" />
+                  <span>Fast & Reliable</span>
                 </div>
               </div>
             </div>
 
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          6. TRENDING NOW (TACTILE HORIZONTAL SCROLL)
-      ======================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-coral">
-              <Flame className="w-4 h-4 fill-coral" />
-              <span>Right Now in Beauty</span>
+            {/* Mysuru Palace Watermark / Architectural Graphic */}
+            <div className="absolute right-3 bottom-0 opacity-15 pointer-events-none select-none">
+              <svg className="w-48 h-32 fill-white" viewBox="0 0 100 60">
+                <path d="M10 50 L15 30 L20 30 L25 20 L30 30 L35 30 L40 50 Z M45 50 L48 25 L52 10 L56 25 L60 50 Z M65 50 L70 30 L75 30 L80 20 L85 30 L90 50 Z" />
+                <rect x="5" y="50" width="90" height="8" rx="2" />
+              </svg>
             </div>
-            <h2 className="font-editorial text-4xl text-charcoal tracking-tight mt-1">
-              Trending Formulations
-            </h2>
-          </div>
-          
-          {/* Scroll Navigation Arrows */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => scrollTrending('left')}
-              aria-label="Scroll left"
-              className="w-9 h-9 rounded-full border border-[#EFE7E1] bg-white hover:bg-warmcream text-charcoal flex items-center justify-center transition-colors shadow-subtle"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => scrollTrending('right')}
-              aria-label="Scroll right"
-              className="w-9 h-9 rounded-full border border-[#EFE7E1] bg-white hover:bg-warmcream text-charcoal flex items-center justify-center transition-colors shadow-subtle"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
 
-        {/* Scrollable Row with 3D tactile cards */}
-        <div 
-          ref={trendingScrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {trendingProducts.map(prod => (
-            <div key={prod.id} className="min-w-[260px] sm:min-w-[290px] max-w-[290px] shrink-0 snap-start">
-              <ProductCard product={prod} onNavigate={onNavigate} />
-            </div>
-          ))}
+          </div>
+
         </div>
       </section>
 

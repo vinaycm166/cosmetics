@@ -8,10 +8,15 @@ export default {
     extend: {
       colors: {
         // Official Dew & Go Brand Retail Palette
+        burgundy: {
+          DEFAULT: '#581227',
+          light: '#78233C',
+          dark: '#430C1D',
+        },
         berry: {
-          DEFAULT: '#721C46',
-          light: '#8E2859',
-          dark: '#561434',
+          DEFAULT: '#581227',
+          light: '#78233C',
+          dark: '#430C1D',
         },
         rose: {
           DEFAULT: '#E84F87',

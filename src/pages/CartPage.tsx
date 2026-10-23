@@ -75,19 +75,14 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       
-      {/* Header */}
-      <div className="border-b border-[#EFE7E1] pb-6 flex items-baseline justify-between">
-        <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-berry">
-            Order Review
-          </span>
-          <h1 className="font-editorial text-4xl sm:text-5xl text-charcoal mt-1">
-            Shopping Bag ({itemCount} {itemCount === 1 ? 'Formulation' : 'Formulations'})
-          </h1>
-        </div>
+      {/* Header Matching Reference Image */}
+      <div className="border-b border-[#F0EAE8] pb-4 flex items-baseline justify-between">
+        <h1 className="font-editorial text-3xl sm:text-4xl font-bold text-charcoal">
+          Your Cart ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+        </h1>
         <button
           onClick={() => onNavigate('/shop')}
-          className="text-xs font-bold text-berry hover:underline hidden sm:block"
+          className="text-xs font-semibold text-burgundy hover:underline hidden sm:block"
         >
           Continue Shopping →
         </button>
@@ -252,54 +247,48 @@ export const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Price Breakdown */}
-          <div className="p-6 rounded-3xl border border-[#EFE7E1] bg-white shadow-card space-y-4">
-            <h3 className="font-heading font-extrabold text-xs uppercase tracking-widest text-charcoal border-b border-[#EFE7E1] pb-3">
-              Order Statement
+          {/* Order Summary (Matching Reference Image) */}
+          <div className="p-6 rounded-2xl border border-[#F0EAE8] bg-white shadow-2xs space-y-4">
+            <h3 className="font-heading font-bold text-sm text-charcoal border-b border-[#F0EAE8] pb-3">
+              Order Summary
             </h3>
 
-            <div className="space-y-2.5 text-xs text-muted font-sans">
+            <div className="space-y-2.5 text-xs text-charcoal/80">
               <div className="flex justify-between">
-                <span>Items Subtotal</span>
-                <span className="font-bold text-charcoal">₹{subtotal}</span>
+                <span>Subtotal</span>
+                <span className="font-semibold text-charcoal">₹{subtotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery Fee</span>
+                <span className="font-semibold text-emerald-700">
+                  {deliveryFee === 0 ? 'Free (Gokulam)' : `₹${deliveryFee}`}
+                </span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-rose font-bold">
-                  <span>Promotional Savings</span>
+                <div className="flex justify-between text-burgundy font-semibold">
+                  <span>Discount</span>
                   <span>-₹{discount}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span>Climate-Controlled Delivery</span>
-                <span className="font-bold text-charcoal">
-                  {deliveryFee === 0 ? <span className="text-emerald-700 font-extrabold">COMPLIMENTARY</span> : `₹${deliveryFee}`}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Estimated Taxes (5% GST)</span>
-                <span className="font-bold text-charcoal">₹{tax}</span>
-              </div>
-              <div className="flex justify-between text-base font-black text-charcoal pt-3 border-t border-[#EFE7E1]">
-                <span>Total Payable</span>
+              <div className="flex justify-between text-sm font-bold text-charcoal pt-3 border-t border-[#F0EAE8]">
+                <span>Total</span>
                 <span>₹{total}</span>
               </div>
             </div>
 
             <button
               onClick={() => onNavigate('/checkout')}
-              className="w-full dew-btn-berry !py-4 text-xs font-black uppercase tracking-widest flex items-center justify-between group shadow-3d-float"
+              className="w-full py-3 px-4 rounded-lg bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold transition-all shadow-sm active:scale-98"
             >
-              <span>Proceed to Checkout</span>
-              <span className="flex items-center gap-1.5 font-black">
-                <span>₹{total}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
+              Proceed to Checkout
             </button>
 
-            <div className="pt-3 text-center border-t border-[#EFE7E1]">
-              <p className="text-[11px] text-muted flex items-center justify-center gap-1.5 font-medium">
-                <ShieldCheck className="w-4 h-4 text-berry" />
-                <span>100% Genuine Retail Formulations • Cold-Chain Guaranteed</span>
-              </p>
+            {/* Free Delivery Pill Badge */}
+            <div className="p-3 rounded-lg bg-[#E8F7EE] text-xs text-[#137333] flex items-center gap-2">
+              <span>🚚</span>
+              <span className="text-[11px] font-medium leading-tight">
+                You are eligible for free delivery in Gokulam, Mysuru
+              </span>
             </div>
           </div>
 

@@ -6,84 +6,344 @@ export const INITIAL_CATEGORIES: Category[] = [
     name: 'Skincare',
     slug: 'skincare',
     description: 'Nourishing cleansers, targeted treatments, and barrier-repair creams for radiant skin.',
-    imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=80',
     displayOrder: 1,
     isActive: true,
-    productCount: 14
+    productCount: 24
   },
   {
     id: 'cat-makeup',
     name: 'Makeup',
     slug: 'makeup',
     description: 'Effortless complexion tints, dewy liquid blushes, and peptide lip formulas.',
-    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80',
     displayOrder: 2,
     isActive: true,
-    productCount: 10
-  },
-  {
-    id: 'cat-sunscreen',
-    name: 'Sunscreen',
-    slug: 'sunscreen',
-    description: 'Weightless SPF 50+ PA++++ light fluid gels with zero white cast.',
-    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
-    displayOrder: 3,
-    isActive: true,
-    productCount: 8
-  },
-  {
-    id: 'cat-serums',
-    name: 'Serums',
-    slug: 'serums',
-    description: 'Potent active formulations featuring Niacinamide, Vitamin C, and Hyaluronic Acid.',
-    imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
-    displayOrder: 4,
-    isActive: true,
-    productCount: 9
-  },
-  {
-    id: 'cat-lip-care',
-    name: 'Lip Care',
-    slug: 'lip-care',
-    description: 'Peptide glaze treatments, overnight lip butter masks, and tinted lip oils.',
-    imageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80',
-    displayOrder: 5,
-    isActive: true,
-    productCount: 7
+    productCount: 18
   },
   {
     id: 'cat-haircare',
     name: 'Haircare',
     slug: 'haircare',
     description: 'Rosemary scalp stimulating oils, bond-repair treatments, and clarifying washes.',
-    imageUrl: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
-    displayOrder: 6,
+    imageUrl: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 3,
     isActive: true,
-    productCount: 6
-  },
-  {
-    id: 'cat-body-care',
-    name: 'Body Care',
-    slug: 'body-care',
-    description: 'AHA smoothing body lotions, whipped shea butters, and invigorating scrubs.',
-    imageUrl: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=600&q=80',
-    displayOrder: 7,
-    isActive: true,
-    productCount: 6
+    productCount: 12
   },
   {
     id: 'cat-fragrance',
     name: 'Fragrance',
     slug: 'fragrance',
     description: 'Artisanal Eau de Parfums blending Mediterranean Neroli, Bergamot, and Solar Amber.',
-    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 4,
+    isActive: true,
+    productCount: 10
+  },
+  {
+    id: 'cat-bath-body',
+    name: 'Bath & Body',
+    slug: 'bath-body',
+    description: 'AHA smoothing body lotions, whipped shea butters, and invigorating scrubs.',
+    imageUrl: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 5,
+    isActive: true,
+    productCount: 14
+  },
+  {
+    id: 'cat-beauty-tools',
+    name: 'Beauty Tools',
+    slug: 'beauty-tools',
+    description: 'Rose quartz gua shas, dual-ended jade face rollers, and dermaplaning tools.',
+    imageUrl: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 6,
+    isActive: true,
+    productCount: 8
+  },
+  {
+    id: 'cat-new-arrivals',
+    name: 'New Arrivals',
+    slug: 'new-arrivals',
+    description: 'Latest viral beauty drops, seasonal editions, and innovative clean formulations.',
+    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 7,
+    isActive: true,
+    productCount: 16
+  },
+  {
+    id: 'cat-offers',
+    name: 'Offers',
+    slug: 'offers',
+    description: 'Exclusive bundle savings, promotional gift-sets, and member-only beauty deals.',
+    imageUrl: 'https://images.unsplash.com/photo-1608248597358-1f547c11f62c?auto=format&fit=crop&w=400&q=80',
     displayOrder: 8,
     isActive: true,
-    productCount: 5
+    productCount: 15
   }
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 'prod-cerave-hydrating',
+    name: 'Hydrating Facial Cleanser',
+    slug: 'cerave-hydrating-facial-cleanser',
+    brand: 'CeraVe',
+    brandId: 'brand-cerave',
+    category: 'Skincare',
+    categoryId: 'cat-skincare',
+    shortDescription: 'Gentle, non-foaming cleanser with 3 essential ceramides and hyaluronic acid to restore skin barrier.',
+    description: 'CeraVe Hydrating Facial Cleanser gently cleanses and hydrates the skin without stripping its natural moisture. Formulated with 3 essential ceramides and hyaluronic acid, this non-foaming cleanser helps restore and maintain the skins protective barrier.',
+    benefits: [
+      'Cleanses and hydrates without disrupting the protective skin barrier',
+      'Formulated with 3 essential ceramides (1, 3, 6-II) and Hyaluronic Acid',
+      'MVE Delivery Technology ensures controlled release for 24-hour hydration',
+      'Non-comedogenic, non-drying, and fragrance-free'
+    ],
+    ingredients: 'Aqua/Water, Glycerin, Cetearyl Alcohol, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Glyceryl Stearate, Sodium Hyaluronate, Cholesterol, Phenoxyethanol, Disodium EDTA, Dipotassium Phosphate.',
+    howToUse: 'Wet skin with lukewarm water. Massage cleanser into skin in a gentle, circular motion. Rinse thoroughly.',
+    safetyInformation: 'Avoid direct contact with eyes. If contact occurs, rinse thoroughly with water.',
+    skinType: ['Normal to Dry Skin', 'Sensitive Skin'],
+    skinConcern: ['Dryness', 'Barrier Support', 'Gentle Cleansing'],
+    images: [
+      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80'
+    ],
+    variants: [
+      {
+        id: 'var-cerave-236ml',
+        productId: 'prod-cerave-hydrating',
+        variantName: '236 ml',
+        sku: 'CRV-CLN-HYD-236',
+        price: 899,
+        originalPrice: 1059,
+        discountPercentage: 15,
+        stockQuantity: 40,
+        reservedQuantity: 1,
+        isDefault: true,
+        isActive: true
+      }
+    ],
+    defaultPrice: 899,
+    defaultOriginalPrice: 1059,
+    defaultDiscount: 15,
+    rating: 4.8,
+    reviewCount: 124,
+    isFeatured: true,
+    isTrending: true,
+    isBestseller: true,
+    isNewArrival: false,
+    isPublished: true,
+    createdAt: '2026-03-01T10:00:00Z'
+  },
+  {
+    id: 'prod-minimalist-nia',
+    name: 'Niacinamide 10% Serum',
+    slug: 'minimalist-niacinamide-10-serum',
+    brand: 'Minimalist',
+    brandId: 'brand-minimalist',
+    category: 'Skincare',
+    categoryId: 'cat-skincare',
+    shortDescription: 'Nourishing daily serum formulated with pure 10% Niacinamide and 1% Zinc PCA to reduce acne marks and balance sebum.',
+    description: 'A soothing, lightweight daily serum powered by 10% pure Niacinamide (Vitamin B3) and Zinc PCA. Clinically proven to minimize enlarged pores, reduce blemishes, and strengthen the epidermal barrier for an even, healthy tone.',
+    benefits: [
+      'Visibly reduces pore appearance and oiliness within 14 days',
+      'Fades dark acne spots and hyperpigmentation',
+      'Infused with 1% Zinc PCA to curb blemish-causing microbes',
+      'Fragrance-free, essential oil-free, non-comedogenic'
+    ],
+    ingredients: 'Aqua, Niacinamide, Dimethyl Isosorbide, Glycerin, Butylene Glycol, Zinc PCA, Centella Asiatica Leaf Extract, Sodium Hyaluronate, Phenoxyethanol, Ethylhexylglycerin.',
+    howToUse: 'Apply 2-3 drops after cleansing and hydrating with toner. Gently pat onto face and neck until absorbed. Follow with moisturizer.',
+    safetyInformation: 'For external use only. Patch test on forearm before first use.',
+    skinType: ['Oily', 'Combination', 'Acne-prone', 'All Skin Types'],
+    skinConcern: ['Enlarged Pores', 'Uneven Texture', 'Excess Sebum', 'Acne Marks'],
+    images: [
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1608248597358-1f547c11f62c?auto=format&fit=crop&w=800&q=80'
+    ],
+    variants: [
+      {
+        id: 'var-mini-nia-30ml',
+        productId: 'prod-minimalist-nia',
+        variantName: '30 ml',
+        sku: 'MIN-SRM-NIA-30',
+        price: 549,
+        originalPrice: 699,
+        discountPercentage: 21,
+        stockQuantity: 50,
+        reservedQuantity: 2,
+        isDefault: true,
+        isActive: true
+      }
+    ],
+    defaultPrice: 549,
+    defaultOriginalPrice: 699,
+    defaultDiscount: 21,
+    rating: 4.8,
+    reviewCount: 186,
+    isFeatured: true,
+    isTrending: true,
+    isBestseller: true,
+    isNewArrival: false,
+    isPublished: true,
+    createdAt: '2026-03-02T10:00:00Z'
+  },
+  {
+    id: 'prod-loreal-revitalift',
+    name: 'Revitalift Hyaluronic Acid Cream',
+    slug: 'loreal-revitalift-hyaluronic-acid-cream',
+    brand: "L'Oréal Paris",
+    brandId: 'brand-loreal',
+    category: 'Skincare',
+    categoryId: 'cat-skincare',
+    shortDescription: 'Intensely hydrating gel cream powered by micro hyaluronic acid to plump fine lines and restore radiance.',
+    description: "L'Oréal Paris Revitalift Hyaluronic Acid Plumping Day Cream is formulated with concentrated Micro Hyaluronic Acid that penetrates deeply to lock in moisture, visibly reduce fine dehydration lines, and leave skin velvety soft and radiant.",
+    benefits: [
+      'Micro Hyaluronic Acid penetrates deeply to plump skin from within',
+      'Locks in radiant moisture for 24 hours without feeling heavy',
+      'Non-greasy, translucent gel texture absorbs instantly',
+      'Dermatologically tested and approved for all skin types'
+    ],
+    ingredients: 'Aqua/Water, Glycerin, Dimethicone, Isohexadecane, Hydroxyethylpiperazine Ethane Sulfonic Acid, Sodium Hyaluronate, Silica, Phenoxyethanol, Fragrance.',
+    howToUse: 'Smooth generously over cleansed face and neck every morning. Works beautifully under makeup.',
+    safetyInformation: 'Avoid contact with eyes. Keep in a cool, dry place away from direct sunlight.',
+    skinType: ['All Skin Types', 'Dehydrated', 'Normal to Dry'],
+    skinConcern: ['Dehydration', 'Fine Lines', 'Dullness'],
+    images: [
+      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=800&q=80'
+    ],
+    variants: [
+      {
+        id: 'var-loreal-50ml',
+        productId: 'prod-loreal-revitalift',
+        variantName: '50 ml',
+        sku: 'LOR-CRM-HYA-50',
+        price: 799,
+        originalPrice: 999,
+        discountPercentage: 20,
+        stockQuantity: 35,
+        reservedQuantity: 1,
+        isDefault: true,
+        isActive: true
+      }
+    ],
+    defaultPrice: 799,
+    defaultOriginalPrice: 999,
+    defaultDiscount: 20,
+    rating: 4.7,
+    reviewCount: 98,
+    isFeatured: true,
+    isTrending: false,
+    isBestseller: true,
+    isNewArrival: false,
+    isPublished: true,
+    createdAt: '2026-03-03T10:00:00Z'
+  },
+  {
+    id: 'prod-maybelline-skyhigh',
+    name: 'Sky High Mascara',
+    slug: 'maybelline-sky-high-mascara',
+    brand: 'Maybelline',
+    brandId: 'brand-maybelline',
+    category: 'Makeup',
+    categoryId: 'cat-makeup',
+    shortDescription: 'Viral lengthening mascara that delivers limitless volume and high impact length with flexible tower brush.',
+    description: 'Maybelline Lash Sensational Sky High Mascara delivers full volume and limitless length. Featuring an exclusive Flex Tower brush that bends to volumize and extend every single lash from root to tip. Infused with bamboo extract and fibers for long, lightweight lashes that never flake or smudge.',
+    benefits: [
+      'Limitless length and volume from every angle',
+      'Exclusive Flex Tower brush bends to coat even the shortest lashes',
+      'Enriched with Bamboo Extract and weightless micro-fibers',
+      'Waterproof formula resists humidity, sweat, and tears for 24H'
+    ],
+    ingredients: 'Isododecane, Cera Alba / Beeswax, Copernicia Cerifera Cera, Disteardimonium Hectorite, Aqua/Water, Bambusa Vulgaris Extract, Iron Oxides (CI 77499).',
+    howToUse: 'Hold brush against lashes and sweep from root to tip repeatedly until desired volume and length is achieved.',
+    safetyInformation: 'Ophthalmologist tested. Suitable for contact lens wearers.',
+    skinType: ['All Skin Types'],
+    skinConcern: ['Lash Definition', 'Volume', 'Length'],
+    images: [
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80'
+    ],
+    variants: [
+      {
+        id: 'var-mayb-sky-6ml',
+        productId: 'prod-maybelline-skyhigh',
+        variantName: '6 ml',
+        sku: 'MAY-MSC-SKY-06',
+        price: 599,
+        originalPrice: 749,
+        discountPercentage: 20,
+        stockQuantity: 60,
+        reservedQuantity: 4,
+        isDefault: true,
+        isActive: true
+      }
+    ],
+    defaultPrice: 599,
+    defaultOriginalPrice: 749,
+    defaultDiscount: 20,
+    rating: 4.9,
+    reviewCount: 412,
+    isFeatured: true,
+    isTrending: true,
+    isBestseller: true,
+    isNewArrival: false,
+    isPublished: true,
+    createdAt: '2026-03-04T10:00:00Z'
+  },
+  {
+    id: 'prod-ordinary-ha',
+    name: 'Hyaluronic Acid 2% Serum',
+    slug: 'the-ordinary-hyaluronic-acid-2-serum',
+    brand: 'The Ordinary',
+    brandId: 'brand-ordinary',
+    category: 'Skincare',
+    categoryId: 'cat-skincare',
+    shortDescription: 'Hydration support formula with ultra-pure vegan Hyaluronic Acid and Vitamin B5.',
+    description: 'The Ordinary Hyaluronic Acid 2% + B5 combines low-, medium-, and high-molecular-weight Hyaluronic Acid, as well as a next-generation HA crosspolymer, to provide multi-depth hydration. Supported with the addition of Vitamin B5 which also enhances surface hydration.',
+    benefits: [
+      'Multi-depth hydration utilizing 3 molecular weights of Hyaluronic Acid',
+      'Next-generation HA crosspolymer locks in intense moisture',
+      'Vitamin B5 (Panthenol) heals surface barrier and calms redness',
+      'Silky, oil-free hydration that layers effortlessly under any cream'
+    ],
+    ingredients: 'Aqua (Water), Sodium Hyaluronate, Pentylene Glycol, Propanediol, Sodium Hyaluronate Crosspolymer, Panthenol, Ahnfeltia Concinna Extract, Glycerin, Trisodium Ethylenediamine Disuccinate, Citric Acid, Phenoxyethanol.',
+    howToUse: 'Apply a few drops to entire face in morning and evening before heavier creams. Works best on slightly damp skin.',
+    safetyInformation: 'If irritation occurs, rinse off and discontinue use. Use only as directed.',
+    skinType: ['All Skin Types', 'Dry', 'Dehydrated', 'Sensitive'],
+    skinConcern: ['Dehydration', 'Dryness', 'Skin Barrier'],
+    images: [
+      'https://images.unsplash.com/photo-1608248597358-1f547c11f62c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80'
+    ],
+    variants: [
+      {
+        id: 'var-ord-ha-30ml',
+        productId: 'prod-ordinary-ha',
+        variantName: '30 ml',
+        sku: 'ORD-SRM-HYA-30',
+        price: 699,
+        originalPrice: 850,
+        discountPercentage: 18,
+        stockQuantity: 45,
+        reservedQuantity: 2,
+        isDefault: true,
+        isActive: true
+      }
+    ],
+    defaultPrice: 699,
+    defaultOriginalPrice: 850,
+    defaultDiscount: 18,
+    rating: 4.8,
+    reviewCount: 320,
+    isFeatured: true,
+    isTrending: false,
+    isBestseller: true,
+    isNewArrival: false,
+    isPublished: true,
+    createdAt: '2026-03-05T10:00:00Z'
+  },
   {
     id: 'prod-001',
     name: 'Dew Glow Niacinamide 10% + Zinc 1% Clarifying Serum',
