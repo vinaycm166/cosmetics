@@ -358,18 +358,21 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="border-b border-neutral-border pb-4">
-        <h1 className="font-heading font-bold text-2xl sm:text-3xl text-charcoal-900">
-          Checkout
-        </h1>
-        <p className="text-xs text-muted mt-1">
-          Confirm your delivery address and payment details
-        </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      
+      {/* Checkout Step Tracker (Matching Reference Image) */}
+      <div className="flex items-center justify-center gap-2 sm:gap-4 text-xs font-semibold py-2 border-b border-[#F0EAE8]">
+        <button onClick={() => onNavigate('/cart')} className="text-muted hover:text-charcoal transition-colors">Cart</button>
+        <span className="text-muted">&gt;</span>
+        <span className="text-burgundy font-bold">Address</span>
+        <span className="text-muted">&gt;</span>
+        <span className="text-muted">Payment</span>
+        <span className="text-muted">&gt;</span>
+        <span className="text-muted">Review</span>
       </div>
 
       {errorMessage && (
-        <div className="p-4 rounded-md bg-red-50 border border-red-200 text-sale text-xs flex items-center gap-2.5">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-sale text-xs flex items-center gap-2.5">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -377,24 +380,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
 
       {/* Guest Authentication Prompt Banner */}
       {!user && (
-        <div className="p-4 rounded-md bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-2.5 text-amber-900 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
             <div>
               <span className="font-bold">Customer Account Required:</span>
-              <span className="ml-1 text-charcoal-700">Please sign in or create an account to finalize your order. Your bag will be preserved.</span>
+              <span className="ml-1 text-charcoal">Please sign in or create an account to finalize your order. Your bag will be preserved.</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => onNavigate('/login?redirect=/checkout')}
-              className="dew-btn-dark text-xs !py-1.5 !px-3 font-semibold"
+              className="px-3.5 py-1.5 rounded-lg bg-burgundy text-white text-xs font-bold"
             >
               Sign In
             </button>
             <button
               onClick={() => onNavigate('/signup?redirect=/checkout')}
-              className="dew-btn-secondary text-xs !py-1.5 !px-3 font-semibold"
+              className="px-3.5 py-1.5 rounded-lg border border-[#EFE7E1] bg-white text-charcoal text-xs font-bold"
             >
               Sign Up
             </button>
@@ -408,23 +411,23 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
         <div className="lg:col-span-8 space-y-6">
           
           {/* 1. Address Selection */}
-          <div className="p-6 rounded-md border border-neutral-border bg-white shadow-card space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+          <div className="p-6 rounded-2xl border border-[#F0EAE8] bg-white shadow-2xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0EAE8]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-md bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-burgundy/5 text-burgundy flex items-center justify-center">
                   <MapPin className="w-4 h-4" />
                 </div>
-                <h3 className="font-heading font-bold text-base text-charcoal-900">
-                  1. Delivery Address
+                <h3 className="font-heading font-bold text-base text-charcoal">
+                  Delivery Address
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAddingNewAddress(!isAddingNewAddress)}
-                className="text-xs font-semibold text-brand-600 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-burgundy hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>{isAddingNewAddress ? 'Select Saved Address' : 'Add New Address'}</span>
+                <span>{isAddingNewAddress ? 'Use saved address ▾' : '+ Add New Address'}</span>
               </button>
             </div>
 
@@ -698,21 +701,29 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
 
         </div>
 
-        {/* Right: Order Summary & Place Order */}
+        {/* Right: Order Summary (Matching Reference Image) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="p-6 rounded-md border border-neutral-border bg-white shadow-card space-y-4 sticky top-28">
-            <h3 className="font-heading font-bold text-base text-charcoal-900 border-b border-neutral-100 pb-2">
+          <div className="p-6 rounded-2xl border border-[#F0EAE8] bg-white shadow-2xs space-y-4 sticky top-28">
+            <h3 className="font-heading font-bold text-sm text-charcoal border-b border-[#F0EAE8] pb-3">
               Order Summary
             </h3>
 
-            {/* Quick Items Preview */}
-            <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border-b border-neutral-100 pb-3">
+            {/* Quick Items Preview with Mini Packshots */}
+            <div className="max-h-56 overflow-y-auto space-y-3 pr-1 border-b border-[#F0EAE8] pb-3">
               {items.map(i => (
-                <div key={i.variantId} className="flex items-center justify-between text-xs">
-                  <span className="truncate max-w-[190px] text-charcoal-900">
-                    <span className="font-semibold text-muted">{i.quantity}x</span> {i.name}
-                  </span>
-                  <span className="font-semibold text-charcoal-900">
+                <div key={i.variantId} className="flex items-center gap-3 text-xs">
+                  <div className="w-10 h-10 rounded-lg bg-[#FAF8F6] p-1 border border-[#F0EAE8] shrink-0 flex items-center justify-center">
+                    <img src={i.image} alt={i.name} className="w-full h-full object-contain" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-charcoal truncate block">
+                      {i.name}
+                    </span>
+                    <span className="text-[11px] text-muted block">
+                      Qty: {i.quantity}
+                    </span>
+                  </div>
+                  <span className="font-bold text-charcoal shrink-0">
                     ₹{i.price * i.quantity}
                   </span>
                 </div>
@@ -720,52 +731,45 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Price Snapshot */}
-            <div className="space-y-2 text-xs text-muted">
+            <div className="space-y-2 text-xs text-charcoal/80">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-charcoal-900">₹{serverBill.subtotal}</span>
+                <span className="font-semibold text-charcoal">₹{serverBill.subtotal}</span>
               </div>
               {serverBill.discount > 0 && (
-                <div className="flex justify-between text-brand-600 font-medium">
-                  <span>Discount ({appliedCoupon?.code})</span>
+                <div className="flex justify-between text-burgundy font-medium">
+                  <span>Discount</span>
                   <span>-₹{serverBill.discount}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Delivery</span>
-                <span className="font-semibold text-charcoal-900">
-                  {serverBill.deliveryFee === 0 ? <span className="text-mint-500 font-bold">FREE</span> : `₹${serverBill.deliveryFee}`}
+                <span>Delivery Fee</span>
+                <span className="font-semibold text-emerald-700">
+                  {serverBill.deliveryFee === 0 ? 'Free' : `₹${serverBill.deliveryFee}`}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span>Estimated Taxes (5% GST)</span>
-                <span className="font-semibold text-charcoal-900">₹{serverBill.tax}</span>
-              </div>
-              <div className="flex justify-between text-base font-bold text-charcoal-900 pt-3 border-t border-neutral-border">
-                <span>Total Payable</span>
+              <div className="flex justify-between text-sm font-bold text-charcoal pt-3 border-t border-[#F0EAE8]">
+                <span>Total</span>
                 <span>₹{serverBill.total}</span>
               </div>
             </div>
 
-            {/* Place Order CTA */}
+            {/* Place Order CTA Button */}
             <button
               onClick={handleCreateAndVerifyOrder}
               disabled={isProcessing}
-              className="w-full dew-btn-primary !py-3.5 text-xs font-bold flex items-center justify-between group disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-lg bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60"
             >
               <span>
                 {isProcessing 
-                  ? 'Verifying & Reserving...' 
+                  ? 'Verifying...' 
                   : !user 
-                    ? 'Sign In to Place Order' 
+                    ? 'Sign In to Continue' 
                     : paymentMethod === 'cod' 
                       ? 'Confirm COD Order' 
-                      : 'Pay with Razorpay'}
+                      : 'Continue to Payment'}
               </span>
-              <span className="flex items-center gap-1">
-                <span>₹{serverBill.total}</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
             <div className="text-center pt-2">
