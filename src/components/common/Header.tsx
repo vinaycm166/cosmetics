@@ -1,0 +1,876 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Search, 
+  ShoppingBag, 
+  Heart, 
+  User, 
+  MapPin, 
+  Clock, 
+  ChevronDown, 
+  ChevronRight,
+  X, 
+  Menu, 
+  Sparkles,
+  Tag,
+  ArrowRight,
+  Flame,
+  CheckCircle2
+} from 'lucide-react';
+import { useLocation } from '../../context/LocationContext';
+import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useAuth } from '../../context/AuthContext';
+import { store } from '../../lib/store';
+import { Product } from '../../types';
+
+interface HeaderProps {
+  onNavigate: (route: string) => void;
+  currentRoute: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
+  const { selectedArea, selectedPinCode, isServiceable, estimatedDeliveryMinutes, openLocationModal } = useLocation();
+  const { itemCount, openCartDrawer } = useCart();
+  const { wishlistIds } = useWishlist();
+  const { user, role, isAdmin, logout } = useAuth();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Rotating promotional announcements
+  const announcements = [
+    { text: '✨ Flash Beauty Deal: 20% OFF with code DEWGLOW20 on your routine', link: '/offers' },
+    { text: '⚡ Ultra-fresh cosmetics delivered in 15 mins across Indiranagar, Koramangala & Delhi', link: '/shipping-policy' },
+    { text: '🎁 Free luxury travel sample & free delivery on orders above ₹499', link: '/shop' }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [announcements.length]);
+
+  // Click outside to close search suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter products for live search autocomplete
+  const allProducts = store.getPublishedProducts();
+  const searchResults: Product[] = searchQuery.trim()
+    ? allProducts.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.skinConcern?.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()))
+      ).slice(0, 4)
+    : [];
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onNavigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchFocused(false);
+    }
+  };
+
+  const handleSearchSelect = (route: string) => {
+    onNavigate(route);
+    setIsSearchFocused(false);
+    setSearchQuery('');
+  };
+
+  const handleMegaMenuEnter = (menuKey: string) => {
+    if (megaMenuTimeoutRef.current) clearTimeout(megaMenuTimeoutRef.current);
+    setActiveMegaMenu(menuKey);
+  };
+
+  const handleMegaMenuLeave = () => {
+    megaMenuTimeoutRef.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+    }, 200);
+  };
+
+  // Mega-menu content data
+  const megaMenus: Record<string, {
+    title: string;
+    subcategories: { name: string; route: string }[];
+    concerns: { name: string; route: string }[];
+    featured: {
+      title: string;
+      subtitle: string;
+      image: string;
+      route: string;
+      tag: string;
+    };
+  }> = {
+    skincare: {
+      title: 'Skincare Formulations',
+      subcategories: [
+        { name: 'Active Serums & Ampoules', route: '/category/serums' },
+        { name: 'Barrier Creams & Balms', route: '/category/skincare' },
+        { name: 'Invisible Sunscreens (SPF 50+)', route: '/category/sunscreen' },
+        { name: 'Melting Cleansing Balms', route: '/category/skincare' },
+        { name: 'Hydrating Face Mists', route: '/category/skincare' },
+      ],
+      concerns: [
+        { name: 'Barrier Recovery & Redness', route: '/search?q=barrier' },
+        { name: 'Pore Tightening & Texture', route: '/search?q=pores' },
+        { name: 'Hyperpigmentation & Glow', route: '/search?q=glow' },
+        { name: 'Oil Control & Blemishes', route: '/search?q=niacinamide' },
+      ],
+      featured: {
+        title: 'Cloud Barrier Recovery',
+        subtitle: '5 Biomimetic Ceramides + Oat Beta-Glucan for instant soothing',
+        image: 'https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=600&q=80',
+        route: '/product/cloud-barrier-ceramide-cream',
+        tag: 'Bestseller'
+      }
+    },
+    makeup: {
+      title: 'Dewy & Clean Makeup',
+      subcategories: [
+        { name: 'Peptide Lip Oils & Glazes', route: '/category/lip-care' },
+        { name: 'Seamless Liquid Blushes', route: '/category/makeup' },
+        { name: 'Tubing Peptide Mascaras', route: '/category/makeup' },
+        { name: 'Skin Tints & Complexion', route: '/category/makeup' },
+      ],
+      concerns: [
+        { name: 'Glass Pout & Plump Lips', route: '/category/lip-care' },
+        { name: 'Natural Cheek Flush', route: '/category/makeup' },
+        { name: 'Smudge-Proof Lashes', route: '/category/makeup' },
+      ],
+      featured: {
+        title: 'Glaze Peptide Lip Tint Oil',
+        subtitle: 'High-comfort mirror shine with pure rose-tint cushion',
+        image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80',
+        route: '/product/glaze-peptide-hydrating-lip-tint-oil',
+        tag: 'Trending Now'
+      }
+    },
+    haircare: {
+      title: 'Hair & Scalp Rituals',
+      subcategories: [
+        { name: 'Rosemary Stimulating Oils', route: '/category/haircare' },
+        { name: 'Scalp Detox Cleansers', route: '/category/haircare' },
+        { name: 'Bond Repair Treatments', route: '/category/haircare' },
+      ],
+      concerns: [
+        { name: 'Hair Density & Shedding', route: '/search?q=rosemary' },
+        { name: 'Dry & Itchy Scalp Relief', route: '/category/haircare' },
+        { name: 'Split Ends & Gloss', route: '/category/haircare' },
+      ],
+      featured: {
+        title: 'Rosemary & Biotin Density Oil',
+        subtitle: 'Cold-pressed botanical elixir to strengthen weak follicles',
+        image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=600&q=80',
+        route: '/product/rosemary-biotin-density-scalp-oil',
+        tag: 'Must-Have'
+      }
+    },
+    fragrance: {
+      title: 'Fine Parfumerie',
+      subcategories: [
+        { name: 'Artisanal Eau de Parfums', route: '/category/fragrance' },
+        { name: 'Solar Florals & Citrus', route: '/category/fragrance' },
+        { name: 'Travel Atomizers (10 ml)', route: '/category/fragrance' },
+      ],
+      concerns: [
+        { name: 'Daytime Fresh & Uplifting', route: '/category/fragrance' },
+        { name: 'Evening Warm Amber Sillage', route: '/category/fragrance' },
+      ],
+      featured: {
+        title: 'Santorini Sunset EDP',
+        subtitle: 'Sparkling Bergamot, Orange Blossom & Golden Coconut Amber',
+        image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80',
+        route: '/product/santorini-sunset-eau-de-parfum',
+        tag: 'Signature'
+      }
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-40 w-full bg-white border-b border-border shadow-subtle transition-colors">
+      
+      {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP */}
+      <div className="bg-gradient-to-r from-berry via-brand to-rose text-white py-1.5 px-4 text-center overflow-hidden transition-all duration-300">
+        <div className="max-w-7xl mx-auto flex items-center justify-between text-[11px] font-medium tracking-wide">
+          <div className="hidden md:flex items-center gap-1.5 opacity-90">
+            <Sparkles className="w-3.5 h-3.5 text-lavender" />
+            <span>Hyperlocal Beauty Quick-Commerce</span>
+          </div>
+
+          <div className="flex-1 text-center transition-all duration-500 flex items-center justify-center gap-2">
+            <button 
+              onClick={() => onNavigate(announcements[announcementIndex].link)}
+              className="hover:underline flex items-center gap-1 font-semibold"
+            >
+              <span>{announcements[announcementIndex].text}</span>
+              <ChevronRight className="w-3 h-3 inline" />
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3 text-xs">
+            <button 
+              onClick={() => onNavigate('/offers')} 
+              className="bg-white/20 hover:bg-white/30 text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase transition-colors"
+            >
+              Offers & Codes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. MAIN HEADER ROW */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-18 sm:h-20 gap-3 sm:gap-6">
+          
+          {/* Logo & Delivery Location Pill */}
+          <div className="flex items-center gap-4 lg:gap-6 shrink-0">
+            <button
+              onClick={() => onNavigate('/')}
+              className="text-left flex flex-col group py-1"
+            >
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-editorial text-3xl sm:text-4xl tracking-tight text-charcoal group-hover:text-berry transition-colors">
+                  DEW & GO
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-champagne-500 inline-block shadow-sm"></span>
+              </div>
+              <span className="text-[9px] tracking-[0.25em] text-berry uppercase font-black -mt-1 group-hover:text-charcoal transition-colors font-mono">
+                HAUTE QUICK-COMMERCE
+              </span>
+            </button>
+
+            {/* Hyperlocal Delivery Location Selector */}
+            <button
+              onClick={openLocationModal}
+              className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-md border border-border bg-warmcream hover:border-brand/40 hover:bg-blush/40 text-left transition-all duration-150 shadow-sm"
+              title="Change Delivery Location"
+            >
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-rose shrink-0" />
+                {isServiceable && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-muted flex items-center gap-1 leading-tight">
+                  {isServiceable ? (
+                    <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+                      <Clock className="w-2.5 h-2.5" /> ⚡ {estimatedDeliveryMinutes} Mins Delivery
+                    </span>
+                  ) : (
+                    <span className="text-amber-700 font-semibold">Service Check</span>
+                  )}
+                  <ChevronDown className="w-2.5 h-2.5 text-neutral-400" />
+                </span>
+                <span className="text-xs font-semibold text-charcoal truncate max-w-[140px]">
+                  {selectedArea || `PIN ${selectedPinCode}`}
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* 3. PROMINENT PRODUCT SEARCH WITH AUTOCOMPLETE */}
+          <div ref={searchContainerRef} className="flex-1 max-w-xl relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                placeholder="Search sunscreen, niacinamide, lip oil, blushes..."
+                className="w-full pl-9 pr-9 py-2.5 rounded-full border border-border bg-[#FCF8F5] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all shadow-inner"
+              />
+              <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </form>
+
+            {/* LIVE SEARCH AUTOCOMPLETE POPUP */}
+            {isSearchFocused && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-elevated border border-border p-4 z-50 animate-fade-in divide-y divide-border/60">
+                {/* Matched Products */}
+                {searchResults.length > 0 ? (
+                  <div className="pb-3">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-rose" />
+                      <span>Products Found ({searchResults.length})</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {searchResults.map((prod) => (
+                        <div
+                          key={prod.id}
+                          onClick={() => handleSearchSelect(`/product/${prod.slug}`)}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-warmcream/80 cursor-pointer transition-colors group"
+                        >
+                          <img
+                            src={prod.images[0]}
+                            alt={prod.name}
+                            className="w-10 h-10 object-contain rounded bg-[#FAF7F4] p-1 border border-border/80"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] uppercase font-bold text-muted block truncate">
+                              {prod.brand}
+                            </span>
+                            <h4 className="text-xs font-semibold text-charcoal truncate group-hover:text-rose transition-colors">
+                              {prod.name}
+                            </h4>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-bold text-charcoal">₹{prod.defaultPrice}</span>
+                            {prod.defaultOriginalPrice && prod.defaultOriginalPrice > prod.defaultPrice && (
+                              <span className="text-[10px] text-muted line-through block">₹{prod.defaultOriginalPrice}</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : searchQuery.trim() ? (
+                  <div className="py-2 text-center text-xs text-muted">
+                    No products matching "{searchQuery}". Press Enter to search catalog.
+                  </div>
+                ) : null}
+
+                {/* Popular Search Suggestions */}
+                <div className="pt-3">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1">
+                    <Flame className="w-3 h-3 text-coral" />
+                    <span>Popular Searches</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      'Niacinamide Serum', 
+                      'SPF 50 Sunscreen', 
+                      'Glaze Lip Oil', 
+                      'Cloud Ceramide Cream', 
+                      'Seamless Liquid Blush', 
+                      'Rosemary Scalp Oil', 
+                      'Santorini Perfume'
+                    ].map(term => (
+                      <button
+                        key={term}
+                        onClick={() => handleSearchSelect(`/search?q=${encodeURIComponent(term)}`)}
+                        className="px-2.5 py-1 rounded-full text-xs bg-warmcream hover:bg-blush hover:text-rose text-charcoal border border-border/60 transition-colors"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {searchQuery.trim() && (
+                  <div className="pt-2 text-right">
+                    <button
+                      onClick={handleSearchSubmit}
+                      className="text-xs font-bold text-rose hover:text-berry flex items-center gap-1 ml-auto"
+                    >
+                      <span>View all results for "{searchQuery}"</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 4. USER ACTIONS (ACCOUNT, WISHLIST, BAG) */}
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+            
+            {/* Account Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-1.5 p-2 rounded-md hover:bg-blush/60 text-charcoal text-xs font-medium transition-colors"
+                title="Account Menu"
+              >
+                <div className="w-7 h-7 rounded-full bg-warmcream border border-border flex items-center justify-center text-charcoal group-hover:border-rose">
+                  <User className="w-3.5 h-3.5 text-berry" />
+                </div>
+                <div className="hidden md:flex flex-col text-left leading-tight">
+                  <span className="text-[10px] text-muted">Hello,</span>
+                  <span className="text-xs font-bold text-charcoal">
+                    {user ? user.fullName.split(' ')[0] : 'Sign In'}
+                  </span>
+                </div>
+                <ChevronDown className="w-3 h-3 text-muted hidden md:inline" />
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-dropdown border border-border p-2 z-50 animate-fade-in">
+                  <div className="p-3 border-b border-border/80 bg-warmcream/40 rounded-t-md">
+                    <p className="text-xs font-bold text-charcoal truncate">
+                      {user ? user.fullName : 'Welcome to Dew & Go'}
+                    </p>
+                    <p className="text-[11px] text-muted truncate">
+                      {user ? user.email : 'Log in for personalized recommendations'}
+                    </p>
+                    <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blush text-berry uppercase tracking-wider">
+                      {role === 'super_admin' ? 'Administrator' : role === 'delivery_person' ? 'Delivery Partner' : 'Customer'}
+                    </div>
+                  </div>
+
+                  <div className="py-1 text-xs">
+                    <button
+                      onClick={() => { onNavigate('/account/profile'); setIsUserMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 rounded hover:bg-warmcream text-charcoal transition-colors flex items-center justify-between"
+                    >
+                      <span>My Profile</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted" />
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('/account/orders'); setIsUserMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 rounded hover:bg-warmcream text-charcoal transition-colors flex items-center justify-between"
+                    >
+                      <span>My Orders & Live Tracking</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted" />
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('/account/addresses'); setIsUserMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 rounded hover:bg-warmcream text-charcoal transition-colors flex items-center justify-between"
+                    >
+                      <span>Saved Addresses</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted" />
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('/account/wishlist'); setIsUserMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 rounded hover:bg-warmcream text-charcoal transition-colors flex items-center justify-between"
+                    >
+                      <span>Wishlist ({wishlistIds.length})</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted" />
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('/beauty-advisor'); setIsUserMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 rounded hover:bg-blush/60 text-berry font-semibold transition-colors flex items-center justify-between"
+                    >
+                      <span>AI Skin Routine Advisor</span>
+                      <Sparkles className="w-3.5 h-3.5 text-rose" />
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { onNavigate('/admin/dashboard'); setIsUserMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 rounded hover:bg-berry/10 text-berry font-bold transition-colors flex items-center justify-between border-t border-border/60 mt-1"
+                      >
+                        <span>Admin Dashboard</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-berry" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-border/80">
+                    {user ? (
+                      <button
+                        onClick={() => { logout(); setIsUserMenuOpen(false); }}
+                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-rose hover:bg-blush/40 rounded"
+                      >
+                        Log Out
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => { onNavigate('/account'); setIsUserMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-xs font-bold text-berry hover:bg-blush/40 rounded flex items-center justify-between"
+                      >
+                        <span>Sign In / Create Account</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Wishlist */}
+            <button
+              onClick={() => onNavigate('/account/wishlist')}
+              className="relative p-2 rounded-md hover:bg-blush/60 text-charcoal transition-colors"
+              title="Wishlist"
+            >
+              <Heart className="w-5 h-5 text-charcoal hover:text-rose transition-colors" />
+              {wishlistIds.length > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-rose text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-sm">
+                  {wishlistIds.length}
+                </span>
+              )}
+            </button>
+
+            {/* Cart / Shopping Bag Button */}
+            <button
+              onClick={openCartDrawer}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-md bg-berry hover:bg-berry-dark text-white active:scale-95 transition-all duration-150 shadow-sm"
+              title="Shopping Bag"
+            >
+              <div className="relative">
+                <ShoppingBag className="w-4 h-4 text-white" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-coral text-charcoal text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm animate-bounce">
+                    {itemCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-bold tracking-wide hidden sm:inline">
+                Bag {itemCount > 0 && `(${itemCount})`}
+              </span>
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-charcoal hover:bg-warmcream rounded-md"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* 5. MULTI-LEVEL CATEGORY NAVIGATION ROW + MEGA MENU */}
+        <nav className="hidden md:flex items-center justify-between border-t border-border py-2.5 text-xs font-medium tracking-wide relative">
+          <div className="flex items-center gap-7">
+            
+            {/* Shop All */}
+            <button
+              onClick={() => onNavigate('/shop')}
+              className={`hover:text-rose transition-colors uppercase text-[11px] font-bold tracking-wider ${
+                currentRoute === '/shop' ? 'text-berry font-extrabold border-b-2 border-berry pb-0.5' : 'text-charcoal'
+              }`}
+            >
+              Shop All
+            </button>
+
+            {/* Skincare with Mega Menu */}
+            <div 
+              className="relative py-1"
+              onMouseEnter={() => handleMegaMenuEnter('skincare')}
+              onMouseLeave={handleMegaMenuLeave}
+            >
+              <button
+                onClick={() => onNavigate('/category/skincare')}
+                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
+                  currentRoute.includes('skincare') ? 'text-rose font-bold' : 'text-charcoal'
+                }`}
+              >
+                <span>Skincare</span>
+                <ChevronDown className="w-3 h-3 text-muted" />
+              </button>
+            </div>
+
+            {/* Makeup with Mega Menu */}
+            <div 
+              className="relative py-1"
+              onMouseEnter={() => handleMegaMenuEnter('makeup')}
+              onMouseLeave={handleMegaMenuLeave}
+            >
+              <button
+                onClick={() => onNavigate('/category/makeup')}
+                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
+                  currentRoute.includes('makeup') ? 'text-rose font-bold' : 'text-charcoal'
+                }`}
+              >
+                <span>Makeup</span>
+                <ChevronDown className="w-3 h-3 text-muted" />
+              </button>
+            </div>
+
+            {/* Haircare with Mega Menu */}
+            <div 
+              className="relative py-1"
+              onMouseEnter={() => handleMegaMenuEnter('haircare')}
+              onMouseLeave={handleMegaMenuLeave}
+            >
+              <button
+                onClick={() => onNavigate('/category/haircare')}
+                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
+                  currentRoute.includes('haircare') ? 'text-rose font-bold' : 'text-charcoal'
+                }`}
+              >
+                <span>Haircare</span>
+                <ChevronDown className="w-3 h-3 text-muted" />
+              </button>
+            </div>
+
+            {/* Fragrance with Mega Menu */}
+            <div 
+              className="relative py-1"
+              onMouseEnter={() => handleMegaMenuEnter('fragrance')}
+              onMouseLeave={handleMegaMenuLeave}
+            >
+              <button
+                onClick={() => onNavigate('/category/fragrance')}
+                className={`hover:text-rose transition-colors text-xs font-semibold flex items-center gap-0.5 ${
+                  currentRoute.includes('fragrance') ? 'text-rose font-bold' : 'text-charcoal'
+                }`}
+              >
+                <span>Fragrance</span>
+                <ChevronDown className="w-3 h-3 text-muted" />
+              </button>
+            </div>
+
+            {/* Body Care */}
+            <button
+              onClick={() => onNavigate('/category/body-care')}
+              className={`hover:text-rose transition-colors text-xs font-semibold ${
+                currentRoute.includes('body-care') ? 'text-rose font-bold' : 'text-charcoal'
+              }`}
+            >
+              Body Care
+            </button>
+
+            {/* Sunscreen */}
+            <button
+              onClick={() => onNavigate('/category/sunscreen')}
+              className={`hover:text-rose transition-colors text-xs font-semibold ${
+                currentRoute.includes('sunscreen') ? 'text-rose font-bold' : 'text-charcoal'
+              }`}
+            >
+              Sunscreen
+            </button>
+
+            {/* New Arrivals */}
+            <button
+              onClick={() => onNavigate('/shop')}
+              className="hover:text-rose transition-colors text-xs font-semibold text-charcoal flex items-center gap-1"
+            >
+              <span>New Arrivals</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-coral inline-block"></span>
+            </button>
+
+            {/* Offers */}
+            <button
+              onClick={() => onNavigate('/offers')}
+              className="hover:text-rose transition-colors text-xs font-extrabold text-rose flex items-center gap-1"
+            >
+              <Tag className="w-3.5 h-3.5" />
+              <span>Offers</span>
+            </button>
+
+          </div>
+
+          {/* Right Header Navigation Links */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => onNavigate('/beauty-advisor')}
+              className="text-xs font-bold text-berry hover:text-rose transition-colors flex items-center gap-1 bg-blush px-2.5 py-1 rounded-full border border-rose/20"
+            >
+              <Sparkles className="w-3 h-3 text-rose" />
+              <span>AI Skin Advisor</span>
+            </button>
+
+            {role !== 'customer' && (
+              <button
+                onClick={() => onNavigate(role === 'delivery_person' ? '/delivery' : '/admin')}
+                className="text-xs font-bold text-charcoal hover:text-berry underline"
+              >
+                {role === 'delivery_person' ? 'Rider Hub' : 'Admin Portal'}
+              </button>
+            )}
+          </div>
+
+          {/* 6. EXPANDED MEGA-MENU DROP-DOWN */}
+          {activeMegaMenu && megaMenus[activeMegaMenu] && (
+            <div 
+              onMouseEnter={() => handleMegaMenuEnter(activeMegaMenu)}
+              onMouseLeave={handleMegaMenuLeave}
+              className="absolute left-0 right-0 top-full bg-white shadow-elevated border border-border rounded-b-xl p-6 z-50 animate-mega-menu"
+            >
+              <div className="grid grid-cols-12 gap-8 items-start">
+                
+                {/* Column 1: Subcategories */}
+                <div className="col-span-4 space-y-3">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-berry border-b border-border pb-2">
+                    {megaMenus[activeMegaMenu].title}
+                  </h4>
+                  <ul className="space-y-2">
+                    {megaMenus[activeMegaMenu].subcategories.map(item => (
+                      <li key={item.name}>
+                        <button
+                          onClick={() => { onNavigate(item.route); setActiveMegaMenu(null); }}
+                          className="text-xs text-charcoal hover:text-rose hover:translate-x-1 transition-all flex items-center gap-1.5 group font-medium"
+                        >
+                          <ChevronRight className="w-3 h-3 text-muted group-hover:text-rose" />
+                          <span>{item.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Column 2: By Concern / Target */}
+                <div className="col-span-4 space-y-3">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-berry border-b border-border pb-2">
+                    Shop by Concern
+                  </h4>
+                  <ul className="space-y-2">
+                    {megaMenus[activeMegaMenu].concerns.map(item => (
+                      <li key={item.name}>
+                        <button
+                          onClick={() => { onNavigate(item.route); setActiveMegaMenu(null); }}
+                          className="text-xs text-charcoal hover:text-rose hover:translate-x-1 transition-all flex items-center gap-1.5 group font-medium"
+                        >
+                          <ChevronRight className="w-3 h-3 text-muted group-hover:text-rose" />
+                          <span>{item.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => { onNavigate(`/category/${activeMegaMenu}`); setActiveMegaMenu(null); }}
+                      className="text-xs font-bold text-rose hover:underline flex items-center gap-1"
+                    >
+                      <span>Explore all {activeMegaMenu} products</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Column 3: Featured Photographic Banner */}
+                <div className="col-span-4">
+                  <div 
+                    onClick={() => { onNavigate(megaMenus[activeMegaMenu].featured.route); setActiveMegaMenu(null); }}
+                    className="relative rounded-lg overflow-hidden bg-warmcream border border-border group cursor-pointer aspect-[16/10]"
+                  >
+                    <img
+                      src={megaMenus[activeMegaMenu].featured.image}
+                      alt={megaMenus[activeMegaMenu].featured.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-transparent flex flex-col justify-end p-4 text-white">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-coral mb-1 inline-block">
+                        {megaMenus[activeMegaMenu].featured.tag}
+                      </span>
+                      <h4 className="text-sm font-bold text-white group-hover:text-coral transition-colors">
+                        {megaMenus[activeMegaMenu].featured.title}
+                      </h4>
+                      <p className="text-[11px] text-neutral-200 line-clamp-1 mt-0.5">
+                        {megaMenus[activeMegaMenu].featured.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+        </nav>
+      </div>
+
+      {/* 7. MOBILE DRAWER MENU */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white border-t border-border px-4 py-4 space-y-4 animate-fade-in shadow-dropdown">
+          
+          {/* Mobile Delivery Pin */}
+          <button
+            onClick={() => { openLocationModal(); setIsMobileMenuOpen(false); }}
+            className="w-full flex items-center justify-between p-3 rounded-lg border border-border bg-warmcream text-xs font-semibold text-charcoal shadow-sm"
+          >
+            <span className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-rose" />
+              <span>Deliver to: {selectedArea || `PIN ${selectedPinCode}`}</span>
+            </span>
+            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              ⚡ {estimatedDeliveryMinutes}m
+            </span>
+          </button>
+
+          {/* Quick Categories Grid */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              onClick={() => { onNavigate('/shop'); setIsMobileMenuOpen(false); }}
+              className="p-2.5 text-left rounded-md bg-warmcream font-bold text-berry hover:bg-blush"
+            >
+              Shop All Catalog
+            </button>
+            <button
+              onClick={() => { onNavigate('/offers'); setIsMobileMenuOpen(false); }}
+              className="p-2.5 text-left rounded-md bg-blush font-bold text-rose hover:bg-blush/80 flex items-center justify-between"
+            >
+              <span>Offers & Deals</span>
+              <Tag className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/skincare'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Skincare
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/makeup'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Makeup
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/sunscreen'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Sunscreen
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/serums'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Serums
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/lip-care'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Lip Care
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/haircare'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Haircare
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/fragrance'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Fragrance
+            </button>
+            <button
+              onClick={() => { onNavigate('/category/body-care'); setIsMobileMenuOpen(false); }}
+              className="p-2 text-left rounded hover:bg-warmcream text-charcoal"
+            >
+              Body Care
+            </button>
+          </div>
+
+          {/* Beauty Advisor CTA */}
+          <button
+            onClick={() => { onNavigate('/beauty-advisor'); setIsMobileMenuOpen(false); }}
+            className="w-full py-2.5 px-3 rounded-lg bg-gradient-to-r from-berry to-rose text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <Sparkles className="w-4 h-4 text-lavender" />
+            <span>Launch AI Skin Routine Advisor</span>
+          </button>
+        </div>
+      )}
+
+    </header>
+  );
+};

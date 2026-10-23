@@ -1,0 +1,253 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #FFF9F4; /* Warm Cream */
+  --text-primary: #29242A; /* Charcoal */
+  --text-muted: #756D77;
+  --brand-berry: #721C46; /* Berry */
+  --brand-rose: #E84F87; /* Rose Pink */
+  --brand-coral: #FF8A75; /* Coral */
+  --brand-blush: #FFF0F5; /* Blush */
+  --brand-lavender: #E9E1FF; /* Lavender */
+  --brand-warmcream: #FFF9F4; /* Warm cream */
+  --border-color: #EFE7E1;
+  --sale-accent: #E84F87;
+  --success-color: #267653;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Subtle, clean scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF9F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #DFD5CD;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B8ABA0;
+}
+
+/* Accessible focus rings */
+:focus-visible {
+  outline: 2px solid var(--brand-rose);
+  outline-offset: 2px;
+}
+
+/* Pre-styled e-commerce UI components */
+.dew-btn-primary {
+  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #E84F87;
+}
+.dew-btn-primary:hover {
+  background-color: #D0326D;
+  box-shadow: 0 4px 12px rgba(232, 79, 135, 0.25);
+}
+.dew-btn-primary:active {
+  background-color: #721C46;
+}
+
+.dew-btn-berry {
+  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-white transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #721C46;
+}
+.dew-btn-berry:hover {
+  background-color: #561434;
+  box-shadow: 0 4px 12px rgba(114, 28, 70, 0.3);
+}
+
+.dew-btn-secondary {
+  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-charcoal border border-neutral-200 transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #FFF0F5;
+}
+.dew-btn-secondary:hover {
+  background-color: #FCE1EB;
+}
+
+.dew-btn-outline {
+  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-4 py-2 rounded-md border border-neutral-200 text-charcoal transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #FFFFFF;
+}
+.dew-btn-outline:hover {
+  background-color: #FFF9F4;
+  border-color: #E84F87;
+}
+
+.dew-btn-dark {
+  @apply inline-flex items-center justify-center font-semibold text-xs tracking-wide px-5 py-2.5 rounded-md text-white transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  background-color: #29242A;
+}
+.dew-btn-dark:hover {
+  background-color: #1C181D;
+}
+
+.dew-input {
+  @apply w-full px-3.5 py-2 text-xs rounded-md border border-neutral-200 bg-white text-charcoal placeholder:text-neutral-400 focus:outline-none transition-all;
+}
+.dew-input:focus {
+  border-color: #E84F87;
+  box-shadow: 0 0 0 1px #E84F87;
+}
+
+.dew-badge-sale {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-white;
+  background-color: #E84F87;
+}
+
+.dew-badge-berry {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-white;
+  background-color: #721C46;
+}
+
+.dew-badge-delivery {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200;
+}
+
+/* Animations & Micro-interactions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes megaMenuSlide {
+  from { opacity: 0; transform: translateY(-4px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-mega-menu {
+  animation: megaMenuSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Image containment rules */
+.product-image-container {
+  @apply relative aspect-square bg-[#FDFBF7] flex items-center justify-center overflow-hidden;
+}
+
+.product-image-contain {
+  @apply w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105;
+}
+
+.product-image-cover {
+  @apply w-full h-full object-cover transition-transform duration-500 group-hover:scale-105;
+}
+
+/* 3D Dimensionality & Perspective Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1500 {
+  perspective: 1500px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.translate-z-10 {
+  transform: translateZ(10px);
+}
+
+.translate-z-20 {
+  transform: translateZ(20px);
+}
+
+.translate-z-30 {
+  transform: translateZ(30px);
+}
+
+/* Luxury Editorial Styling */
+.font-editorial {
+  font-family: 'Cormorant Garamond', Didot, 'Bodoni MT', Georgia, serif;
+}
+
+.font-editorial-italic {
+  font-family: 'Cormorant Garamond', Didot, 'Bodoni MT', Georgia, serif;
+  font-style: italic;
+}
+
+/* Glassmorphism & Specular Highlights */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(239, 231, 225, 0.85);
+}
+
+.glass-pill-dark {
+  background: rgba(26, 22, 24, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.shimmer-gleam {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  background-size: 200% 100%;
+}
+
+/* Infinite Editorial Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Subtle 3D Floating Motion */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(8px) rotate(-1deg); }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 7s ease-in-out infinite;
+}
