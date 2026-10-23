@@ -23,7 +23,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useLocation } from '../context/LocationContext';
 import { ProductCard } from '../components/common/ProductCard';
-import { Interactive3DProductViewer } from '../components/3d/Interactive3DProductViewer';
+import { ProductImage } from '../components/common/ProductImage';
 
 interface ProductDetailPageProps {
   slug: string;
@@ -51,8 +51,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
     );
   }
 
-  // Visual Mode: 'photo' (Studio Packshots) or '3d' (Interactive 360° Three.js Stage)
-  const [viewMode, setViewMode] = useState<'photo' | '3d'>('photo');
   const [selectedImage, setSelectedImage] = useState(product.images[0] || '');
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(
     product.variants.find(v => v.isDefault) || product.variants[0]
@@ -119,80 +117,55 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
         {/* Left: Product Stage (Toggleable Studio Photography vs Interactive 3D Canvas) */}
         <div className="lg:col-span-6 space-y-4">
           
-          {/* Stage View Mode Toggle Bar */}
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-              Inspection Mode:
-            </span>
-            <div className="flex items-center gap-1 glass-pill p-1 rounded-full shadow-subtle">
-              <button
-                onClick={() => setViewMode('photo')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  viewMode === 'photo' ? 'bg-berry text-white shadow-subtle' : 'text-charcoal/70 hover:text-charcoal'
-                }`}
-              >
-                <ImageIcon className="w-3.5 h-3.5" />
-                <span>Studio Packshots</span>
-              </button>
-              <button
-                onClick={() => setViewMode('3d')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  viewMode === '3d' ? 'bg-berry text-white shadow-subtle' : 'text-charcoal/70 hover:text-charcoal'
-                }`}
-              >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>Interactive 3D 360°</span>
-              </button>
-            </div>
+          {/* Main Packshot Stage */}
+          <div className="relative aspect-square w-full rounded-3xl bg-[#FAF7F4] border border-[#EFE7E1] overflow-hidden flex items-center justify-center shadow-card animate-fade-in group p-4 sm:p-8">
+            <ProductImage
+              src={selectedImage || product.images[0]}
+              alt={product.name}
+              brand={product.brand}
+              category={product.category}
+              className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-104"
+            />
+            
+            {/* Discount Badge */}
+            {discount && discount > 0 ? (
+              <span className="absolute top-4 left-4 glass-pill px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest text-sale shadow-subtle border border-sale/20">
+                {discount}% OFF
+              </span>
+            ) : null}
+
+            {/* Wishlist Button */}
+            <button
+              onClick={() => toggleWishlist(product.id)}
+              aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+              className={`absolute top-4 right-4 p-2.5 rounded-full border border-border transition-all shadow-subtle ${
+                wishlisted ? 'bg-rose text-white scale-105' : 'bg-white/90 text-charcoal/60 hover:text-rose hover:bg-white'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${wishlisted ? 'fill-white' : ''}`} />
+            </button>
           </div>
 
-          {/* Active Stage Display */}
-          {viewMode === '3d' ? (
-            <div className="animate-fade-in">
-              <Interactive3DProductViewer product={product} />
-            </div>
-          ) : (
-            <div className="relative aspect-square w-full rounded-3xl bg-[#FAF7F4] border border-[#EFE7E1] overflow-hidden flex items-center justify-center shadow-card animate-fade-in group">
-              <img
-                src={selectedImage}
-                alt={product.name}
-                className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-106"
-              />
-              
-              {/* Discount Badge */}
-              {discount && discount > 0 ? (
-                <span className="absolute top-4 left-4 glass-pill px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest text-sale shadow-subtle border border-sale/20">
-                  {discount}% OFF
-                </span>
-              ) : null}
-
-              {/* Wishlist Button */}
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                aria-label={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-                className={`absolute top-4 right-4 p-2.5 rounded-full border border-border transition-all shadow-subtle ${
-                  wishlisted ? 'bg-rose text-white scale-105' : 'bg-white/90 text-charcoal/60 hover:text-rose hover:bg-white'
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${wishlisted ? 'fill-white' : ''}`} />
-              </button>
-            </div>
-          )}
-
-          {/* Gallery Thumbnails (active when in photo mode) */}
-          {viewMode === 'photo' && product.images.length > 1 && (
+          {/* Gallery Thumbnails */}
+          {product.images.length > 1 && (
             <div className="flex gap-3 overflow-x-auto pb-1">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 rounded-2xl border bg-[#FAF7F4] p-2 transition-all shrink-0 ${
+                  className={`w-20 h-20 rounded-2xl border bg-[#FAF7F4] p-1.5 transition-all shrink-0 overflow-hidden ${
                     selectedImage === img 
                       ? 'border-berry ring-2 ring-berry/20 shadow-subtle' 
                       : 'border-[#EFE7E1] hover:border-neutral-400'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-contain" />
+                  <ProductImage 
+                    src={img} 
+                    alt={`Thumbnail ${idx + 1}`} 
+                    brand={product.brand}
+                    category={product.category}
+                    className="w-full h-full object-contain" 
+                  />
                 </button>
               ))}
             </div>
@@ -251,7 +224,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
               <Clock className="w-4 h-4 text-berry shrink-0" />
               <span>
                 {isServiceable ? (
-                  <>Dispatched from Indiranagar Hub to <b>{selectedArea}</b> in ~{estimatedDeliveryMinutes} mins</>
+                  <>Dispatched from Gokulam Hub to <b>{selectedArea}</b> in ~{estimatedDeliveryMinutes} mins</>
                 ) : (
                   <>Hyperlocal service check for {selectedArea}</>
                 )}

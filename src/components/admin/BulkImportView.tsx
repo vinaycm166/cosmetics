@@ -39,6 +39,7 @@ import {
   PLACEHOLDER_COSMETIC_IMAGE
 } from '../../lib/bulkImportService';
 import { store } from '../../lib/store';
+import { ProductImage, isValidImageUrl } from '../common/ProductImage';
 
 interface BulkImportViewProps {
   onImportComplete: () => void;
@@ -347,6 +348,38 @@ export const BulkImportView: React.FC<BulkImportViewProps> = ({ onImportComplete
   const warningCount = parsedRows.filter(r => r.validationStatus === 'warning').length;
   const errorCount = parsedRows.filter(r => r.validationStatus === 'error').length;
   const selectedCount = parsedRows.filter(r => r.selectedForImport && r.validationStatus !== 'error').length;
+
+  // Exact 5 metrics required for Catalogue & Image Audit:
+  const catalogueAudit = useMemo(() => {
+    const total = parsedRows.length;
+    let validImages = 0;
+    let missingImages = 0;
+    let invalidUrls = 0;
+    let requiringReview = 0;
+
+    for (const r of parsedRows) {
+      const url = r.imageUrl?.trim() || '';
+      if (!url) {
+        missingImages++;
+      } else if (isValidImageUrl(url)) {
+        validImages++;
+      } else {
+        invalidUrls++;
+      }
+
+      if (r.requiresImageReview || !isValidImageUrl(url) || !r.sellingPrice || r.sellingPrice <= 0) {
+        requiringReview++;
+      }
+    }
+
+    return {
+      total,
+      validImages,
+      missingImages,
+      invalidUrls,
+      requiringReview
+    };
+  }, [parsedRows]);
 
   return (
     <div className="space-y-6">
@@ -842,6 +875,41 @@ export const BulkImportView: React.FC<BulkImportViewProps> = ({ onImportComplete
             </div>
           </div>
 
+          {/* Catalogue & Photography Audit Bar (5 Metrics) */}
+          <div className="bg-[#FAF7F4] border border-neutral-border rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-charcoal-700 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-berry" />
+                <span>Catalogue & Photography Verification Audit</span>
+              </span>
+              <span className="text-[10px] text-muted">
+                Requires genuine photography before storefront publication
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+              <div className="bg-white p-2.5 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-muted uppercase block">Total Products</span>
+                <span className="text-xl font-heading font-extrabold text-charcoal-900">{catalogueAudit.total}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Valid Images</span>
+                <span className="text-xl font-heading font-extrabold text-emerald-700">{catalogueAudit.validImages}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-amber-700 uppercase block">Missing Images</span>
+                <span className="text-xl font-heading font-extrabold text-amber-700">{catalogueAudit.missingImages}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-rose uppercase block">Invalid Image URLs</span>
+                <span className="text-xl font-heading font-extrabold text-rose">{catalogueAudit.invalidUrls}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-berry uppercase block">Requires Review</span>
+                <span className="text-xl font-heading font-extrabold text-berry">{catalogueAudit.requiringReview}</span>
+              </div>
+            </div>
+          </div>
+
           {/* Metrics & Filter Row */}
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-1.5">
@@ -953,13 +1021,12 @@ export const BulkImportView: React.FC<BulkImportViewProps> = ({ onImportComplete
                       {/* Image Thumbnail & Source Badge */}
                       <td className="p-3">
                         <div className="relative w-12 h-12 rounded-lg bg-warmcream border border-border overflow-hidden group">
-                          <img
+                          <ProductImage
                             src={row.imageUrl}
                             alt={row.productName}
+                            brand={row.brand}
                             className="w-full h-full object-contain p-1"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = PLACEHOLDER_COSMETIC_IMAGE;
-                            }}
+                            badge={false}
                           />
                           {row.imageResolutionSource === 'barcode_match' && (
                             <span className="absolute bottom-0 inset-x-0 bg-emerald-700 text-white text-[8px] font-extrabold text-center block">
@@ -1226,6 +1293,51 @@ export const BulkImportView: React.FC<BulkImportViewProps> = ({ onImportComplete
                 {importSummary.failedCount}
               </span>
             </div>
+          </div>
+
+          {/* Catalogue & Photography Audit Report (5 Required Metrics) */}
+          <div className="bg-[#FAF7F4] border border-neutral-border rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-charcoal-800 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-berry" />
+                <span>Product Catalogue & Photography Audit Report</span>
+              </span>
+              <span className="text-[11px] text-muted font-medium">
+                Storefront publication status
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+              <div className="bg-white p-3 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-muted uppercase block">Total Products</span>
+                <span className="text-2xl font-heading font-extrabold text-charcoal-900">{catalogueAudit.total}</span>
+                <span className="text-[9px] text-muted block mt-0.5">Rows evaluated</span>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase block">Valid Images</span>
+                <span className="text-2xl font-heading font-extrabold text-emerald-700">{catalogueAudit.validImages}</span>
+                <span className="text-[9px] text-muted block mt-0.5">Verified URLs</span>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-amber-700 uppercase block">Missing Images</span>
+                <span className="text-2xl font-heading font-extrabold text-amber-700">{catalogueAudit.missingImages}</span>
+                <span className="text-[9px] text-muted block mt-0.5">Empty image URL</span>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-rose uppercase block">Invalid Image URLs</span>
+                <span className="text-2xl font-heading font-extrabold text-rose">{catalogueAudit.invalidUrls}</span>
+                <span className="text-[9px] text-muted block mt-0.5">Relative/unhosted</span>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-neutral-border/80 shadow-xs">
+                <span className="text-[10px] font-bold text-berry uppercase block">Requires Review</span>
+                <span className="text-2xl font-heading font-extrabold text-berry">{catalogueAudit.requiringReview}</span>
+                <span className="text-[9px] text-muted block mt-0.5">Price or image pending</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-charcoal-600 bg-white/70 p-2.5 rounded-lg border border-neutral-border/60">
+              <b>Catalogue Integrity Notice:</b> Products missing selling prices, MRP, or valid image URLs are safely retained as <b>Draft</b> and will not display broken images or incomplete data on the live storefront. Administrators can upload verified brand photos and set live pricing via the Products tab.
+            </p>
           </div>
 
           {/* Error Table if any */}

@@ -48,10 +48,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
     addressLine: '',
     apartmentBuilding: '',
     landmark: '',
-    area: '',
-    city: 'Bengaluru',
+    area: 'Gokulam',
+    city: 'Mysuru',
     state: 'Karnataka',
-    pinCode: '560038',
+    pinCode: '570002',
     deliveryInstructions: '',
     isDefault: true,
   });
@@ -71,7 +71,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   }>({
     serviceable: true,
     estimatedDeliveryMinutes: 15,
-    zoneName: 'Express Hyperlocal Zone',
+    zoneName: 'Gokulam Express Hyperlocal Zone',
     subtotal,
     discount,
     deliveryFee: subtotal >= 499 ? 0 : 49,
@@ -83,7 +83,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   useEffect(() => {
     if (items.length === 0) return;
 
-    const pin = selectedAddress ? selectedAddress.pinCode : '560038';
+    const pin = selectedAddress ? selectedAddress.pinCode : '570002';
     fetch('/api/checkout/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -152,7 +152,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
     // Verify serviceability
     const serviceCheck = store.checkServiceability(currentAddr.pinCode);
     if (!serviceCheck.serviceable) {
-      setErrorMessage(`Delivery is not available to PIN ${currentAddr.pinCode}. Please select a serviceable PIN code (e.g. 560038, 560001, 110001, 400001).`);
+      setErrorMessage(`Delivery is not currently available to PIN ${currentAddr.pinCode}. Supported express delivery zones include Gokulam, Mysuru (570002), Jayalakshmipuram (570012), Vijayanagar (570017), and regional micro-hubs.`);
       return;
     }
 
@@ -504,24 +504,38 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
-                    Street Address / House No. *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newAddr.addressLine}
-                    onChange={e => setNewAddr({ ...newAddr, addressLine: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
-                    placeholder="Flat 402, Lotus Residency, 12th Main"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
-                      Area / Locality *
+                      House / Flat / Apartment Details
+                    </label>
+                    <input
+                      type="text"
+                      value={newAddr.apartmentBuilding}
+                      onChange={e => setNewAddr({ ...newAddr, apartmentBuilding: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
+                      placeholder="e.g. Flat 301, Rosewood Heights / House #42"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
+                      Street Address / Road / Cross *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newAddr.addressLine}
+                      onChange={e => setNewAddr({ ...newAddr, addressLine: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
+                      placeholder="e.g. 3rd Main, 4th Cross"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
+                      Locality / Area *
                     </label>
                     <input
                       type="text"
@@ -529,7 +543,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                       value={newAddr.area}
                       onChange={e => setNewAddr({ ...newAddr, area: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
-                      placeholder="Indiranagar"
+                      placeholder="e.g. Gokulam 3rd Stage"
                     />
                   </div>
                   <div>
@@ -542,7 +556,20 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                       value={newAddr.city}
                       onChange={e => setNewAddr({ ...newAddr, city: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
-                      placeholder="Bengaluru"
+                      placeholder="Mysuru"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
+                      State *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newAddr.state}
+                      onChange={e => setNewAddr({ ...newAddr, state: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
+                      placeholder="Karnataka"
                     />
                   </div>
                   <div>
@@ -556,9 +583,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                       value={newAddr.pinCode}
                       onChange={e => setNewAddr({ ...newAddr, pinCode: e.target.value })}
                       className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white font-mono"
-                      placeholder="560038"
+                      placeholder="570002"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase text-charcoal-900 mb-1">
+                    Delivery Instructions (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newAddr.deliveryInstructions}
+                    onChange={e => setNewAddr({ ...newAddr, deliveryInstructions: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-md border border-neutral-border focus:outline-none focus:border-brand-500 bg-white"
+                    placeholder="e.g. Leave with security / Ring bell twice"
+                  />
                 </div>
 
                 <div className="pt-2 flex justify-end gap-2">

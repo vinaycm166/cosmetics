@@ -3,6 +3,7 @@ import { Heart, ShoppingBag, Star, Check, Eye, X, ShieldCheck, Zap } from 'lucid
 import { Product, ProductVariant } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { ProductImage } from './ProductImage';
 
 interface ProductCardProps {
   product: Product;
@@ -12,7 +13,6 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate }) => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const cardRef = useRef<HTMLDivElement>(null);
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(() => {
     return product.variants.find(v => v.isDefault) || product.variants[0];
@@ -22,41 +22,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
   const [isHovered, setIsHovered] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
 
-  // 3D Tilt Coordinates
-  const [tilt, setTilt] = useState({ x: 0, y: 0, glareX: 50, glareY: 50 });
-
   const price = selectedVariant?.price ?? product.defaultPrice;
   const originalPrice = selectedVariant?.originalPrice ?? product.defaultOriginalPrice;
   const discount = selectedVariant?.discountPercentage ?? product.defaultDiscount;
   const inStock = selectedVariant ? selectedVariant.stockQuantity > selectedVariant.reservedQuantity : true;
   const wishlisted = isInWishlist(product.id);
 
-  const primaryImage = product.images[0] || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80';
+  const primaryImage = product.images[0] || '';
   const secondaryImage = product.images[1] || null;
-
-  // Handle subtle 3D cursor tilt
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    // Max 8 degrees tilt for elegant, non-disorienting tactile feel
-    const rotateX = ((y - centerY) / centerY) * -7;
-    const rotateY = ((x - centerX) / centerX) * 7;
-
-    const glareX = (x / rect.width) * 100;
-    const glareY = (y / rect.height) * 100;
-
-    setTilt({ x: rotateX, y: rotateY, glareX, glareY });
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setTilt({ x: 0, y: 0, glareX: 50, glareY: 50 });
-  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,36 +55,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
   return (
     <>
       <div
-        ref={cardRef}
         onClick={() => onNavigate(`/product/${product.slug}`)}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          transform: isHovered
-            ? `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateY(-4px)`
-            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)',
-          transition: isHovered ? 'transform 0.1s ease-out, box-shadow 0.25s ease' : 'transform 0.4s ease, box-shadow 0.3s ease'
-        }}
-        className="group relative bg-white border border-[#EFE7E1] rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer shadow-subtle hover:shadow-3d-float hover:border-brand/40 select-none"
+        onMouseLeave={() => setIsHovered(false)}
+        className="group relative bg-white border border-[#EFE7E1] rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer shadow-subtle hover:shadow-card hover:-translate-y-1 hover:border-berry/30 transition-all duration-300 select-none"
       >
-        {/* Specular Glare Overlay on 3D Tilt */}
-        {isHovered && (
-          <div
-            className="absolute inset-0 pointer-events-none z-20 opacity-40 mix-blend-overlay transition-opacity duration-200"
-            style={{
-              background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 65%)`
-            }}
-          />
-        )}
-
         {/* 1. Packshot Container */}
-        <div className="relative aspect-square w-full bg-[#FAF7F4] overflow-hidden flex items-center justify-center p-4">
-          <img
+        <div className="relative aspect-square w-full bg-[#FAF7F4] overflow-hidden flex items-center justify-center p-3">
+          <ProductImage
             src={isHovered && secondaryImage ? secondaryImage : primaryImage}
             alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-108"
+            brand={product.brand}
+            category={product.category}
+            className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
           />
 
           {/* Luxury Discount Pill */}
@@ -267,10 +223,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onNavigate })
             </button>
 
             <div className="flex gap-5">
-              <div className="w-1/2 aspect-square rounded-2xl bg-[#FAF7F4] p-4 flex items-center justify-center overflow-hidden border border-border">
-                <img 
+              <div className="w-1/2 aspect-square rounded-2xl bg-[#FAF7F4] p-2 flex items-center justify-center overflow-hidden border border-border">
+                <ProductImage 
                   src={primaryImage} 
                   alt={product.name} 
+                  brand={product.brand}
+                  category={product.category}
                   className="w-full h-full object-contain"
                 />
               </div>

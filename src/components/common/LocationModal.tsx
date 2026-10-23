@@ -85,7 +85,7 @@ export const LocationModal: React.FC = () => {
                   setCustomPin(e.target.value.replace(/\D/g, ''));
                   setFeedback(null);
                 }}
-                placeholder="e.g. 560038"
+                placeholder="e.g. 570002 (Gokulam)"
                 className="w-full pl-9 pr-4 py-2 rounded-md border border-neutral-border text-xs font-semibold tracking-wider text-charcoal-900 focus:outline-none focus:border-brand-500 bg-white"
               />
               <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />

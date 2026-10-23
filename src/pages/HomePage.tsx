@@ -17,7 +17,7 @@ import {
   Sun
 } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
-import { ThreeHeroCosmeticsScene } from '../components/3d/ThreeHeroCosmeticsScene';
+import { ProductImage } from '../components/common/ProductImage';
 import { store } from '../lib/store';
 import { useLocation } from '../context/LocationContext';
 import { useCart } from '../context/CartContext';
@@ -48,7 +48,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     return p.category.toLowerCase().includes(bestsellerCategory.toLowerCase());
   }).slice(0, 8);
 
-  // Hero Routine Preset Switcher State
+  // Hero Routine Preset Switcher State with Authentic Product Photography
   const [heroRoutine, setHeroRoutine] = useState<number>(0);
   const heroRoutines = [
     {
@@ -57,7 +57,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       badge: 'Clinically Proven Actives',
       tag: 'Morning & Night Protocol',
       route: '/category/skincare',
-      accent: '#721C46'
+      accent: '#721C46',
+      image: 'https://images.unsplash.com/photo-1556228722-d0b5de731748?auto=format&fit=crop&w=1000&q=85',
+      featuredProduct: allProducts.find(p => p.name.includes('Barrier') || p.name.includes('Ceramide')) || allProducts[0]
     },
     {
       title: 'The High-Shine Peptide Glaze',
@@ -65,7 +67,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       badge: 'Clean & Cruelty-Free',
       tag: 'Glass Skin Signature',
       route: '/category/makeup',
-      accent: '#E84F87'
+      accent: '#E84F87',
+      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=1000&q=85',
+      featuredProduct: allProducts.find(p => p.name.includes('Lip') || p.category.toLowerCase().includes('lip') || p.category.toLowerCase().includes('makeup')) || allProducts[1]
     },
     {
       title: 'Cellular Radiance Lift',
@@ -73,7 +77,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       badge: 'Cold-Dispatched Potency',
       tag: 'Active Skin Defense',
       route: '/category/skincare',
-      accent: '#D4AF37'
+      accent: '#D4AF37',
+      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1000&q=85',
+      featuredProduct: allProducts.find(p => p.name.includes('Niacinamide') || p.name.includes('Serum')) || allProducts[2]
     }
   ];
 
@@ -167,7 +173,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               {/* Editorial Headline */}
               <div className="space-y-3">
                 <span className="text-[11px] font-black uppercase tracking-[0.25em] text-berry/80 block">
-                  Haute Skincare & Cosmetics • Cold-Chain Express
+                  Haute Skincare & Cosmetics • Gokulam Micro-Hub
                 </span>
                 <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl text-charcoal leading-[1.02] tracking-tight">
                   The Architecture of <br />
@@ -176,7 +182,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   </span>
                 </h1>
                 <p className="text-sm sm:text-base text-charcoal/70 max-w-lg leading-relaxed font-sans font-normal pt-1">
-                  Active biomimetic ceramides, pure botanical elixirs, and dermatologically verified cosmetics. Formulated for high efficacy and delivered fresh to your door in 15 minutes.
+                  Active biomimetic ceramides, pure botanical elixirs, and dermatologically verified cosmetics. Dispatched fresh from our temperature-controlled Gokulam micro-hub in Mysuru.
                 </p>
               </div>
 
@@ -206,7 +212,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               <div className="flex flex-wrap items-center gap-4 pt-3">
                 <button
                   onClick={() => onNavigate(heroRoutines[heroRoutine].route)}
-                  className="dew-btn-berry !px-8 !py-4 text-xs tracking-widest uppercase font-black shadow-3d-float hover:scale-102 transition-transform flex items-center gap-2 group"
+                  className="dew-btn-berry !px-8 !py-4 text-xs tracking-widest uppercase font-black shadow-card hover:scale-102 transition-transform flex items-center gap-2 group"
                 >
                   <span>Shop Routine</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -219,39 +225,46 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 </button>
               </div>
 
-              {/* Three Editorial Trust Seals */}
+              {/* Three Editorial Trust Seals (Based on Real Store Operations) */}
               <div className="pt-6 border-t border-[#EFE7E1] grid grid-cols-3 gap-4 text-xs text-muted">
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-5 h-5 text-berry shrink-0 stroke-[1.5]" />
                   <div>
-                    <span className="font-bold text-charcoal text-[11px] block">100% Verified</span>
-                    <span className="text-[10px] text-muted">Authentic Formulations</span>
+                    <span className="font-bold text-charcoal text-[11px] block">100% Genuine</span>
+                    <span className="text-[10px] text-muted">Authorized Batches</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Clock className="w-5 h-5 text-berry shrink-0 stroke-[1.5]" />
                   <div>
-                    <span className="font-bold text-charcoal text-[11px] block">15-Min Arrival</span>
-                    <span className="text-[10px] text-muted">Cold-Chain Dispatch</span>
+                    <span className="font-bold text-charcoal text-[11px] block">~15-Min Delivery</span>
+                    <span className="text-[10px] text-muted">Gokulam Hub, Mysuru</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Star className="w-5 h-5 text-champagne-500 fill-champagne-500 shrink-0" />
+                  <Sparkles className="w-5 h-5 text-champagne-600 shrink-0 stroke-[1.5]" />
                   <div>
-                    <span className="font-bold text-charcoal text-[11px] block">4.9/5 Rating</span>
-                    <span className="text-[10px] text-muted">Over 12,000 Routines</span>
+                    <span className="font-bold text-charcoal text-[11px] block">Cold-Chain Potency</span>
+                    <span className="text-[10px] text-muted">Protected Storage</span>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Right: Three.js Interactive 3D Cosmetic Scene */}
+            {/* Right: Authentic Beauty Campaign Photography Stage */}
             <div className="lg:col-span-6 relative">
-              <div className="relative aspect-square max-w-[560px] mx-auto rounded-3xl overflow-hidden glass-pill border border-[#EFE7E1] shadow-3d-float p-2">
+              <div className="relative aspect-square max-w-[560px] mx-auto rounded-3xl overflow-hidden glass-pill border border-[#EFE7E1] shadow-card p-3 bg-white">
                 
-                {/* 3D WebGL Canvas */}
-                <ThreeHeroCosmeticsScene className="w-full h-full rounded-2xl" />
+                {/* Genuine Product Campaign Photography */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden bg-[#FAF7F4] flex items-center justify-center">
+                  <img
+                    src={heroRoutines[heroRoutine].image}
+                    alt={heroRoutines[heroRoutine].title}
+                    className="w-full h-full object-cover transition-all duration-700 ease-out hover:scale-103"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 via-transparent to-transparent pointer-events-none" />
+                </div>
 
                 {/* Floating Routine Information Card */}
                 <div className="absolute top-6 left-6 max-w-[280px] glass-pill p-3.5 rounded-2xl shadow-subtle border border-white/80 pointer-events-none select-none">
@@ -269,15 +282,41 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   </p>
                 </div>
 
-                {/* Floating Rating Pill */}
-                <div className="absolute bottom-6 left-6 glass-pill-dark px-3.5 py-2 rounded-xl border border-white/10 shadow-lg text-white pointer-events-none select-none flex items-center gap-2.5">
-                  <div className="flex items-center gap-0.5 text-champagne-300">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-champagne-300" />
-                    ))}
+                {/* Floating Genuine Featured Product Card */}
+                {heroRoutines[heroRoutine].featuredProduct && (
+                  <div className="absolute bottom-6 inset-x-6 glass-pill p-3 rounded-2xl border border-white/90 shadow-elevated flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-white p-1 border border-border shrink-0 overflow-hidden flex items-center justify-center">
+                        <ProductImage
+                          src={heroRoutines[heroRoutine].featuredProduct.images[0]}
+                          alt={heroRoutines[heroRoutine].featuredProduct.name}
+                          brand={heroRoutines[heroRoutine].featuredProduct.brand}
+                          category={heroRoutines[heroRoutine].featuredProduct.category}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-berry block truncate">
+                          {heroRoutines[heroRoutine].featuredProduct.brand}
+                        </span>
+                        <h5 className="font-heading font-bold text-xs text-charcoal truncate">
+                          {heroRoutines[heroRoutine].featuredProduct.name}
+                        </h5>
+                        <span className="text-xs font-black text-charcoal">
+                          ₹{heroRoutines[heroRoutine].featuredProduct.defaultPrice}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleAddStepProduct(heroRoutines[heroRoutine].featuredProduct)}
+                      className="dew-btn-berry !py-2 !px-3.5 text-[11px] font-bold tracking-wider shrink-0 flex items-center gap-1 shadow-subtle"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Quick Add</span>
+                    </button>
                   </div>
-                  <span className="text-[11px] font-bold">Cold Pack Fresh</span>
-                </div>
+                )}
 
               </div>
             </div>
@@ -296,13 +335,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <span className="text-champagne-400">★ COLD-CHAIN DISPATCHED IN 15 MINS</span>
           <span>• 100% DERMATOLOGICALLY VERIFIED</span>
           <span className="text-rose">★ ZERO CRUELTY • PURE BOTANICAL FORMULATIONS</span>
-          <span>• INDIRANAGAR & KORAMANGALA EXPRESS HUBS</span>
+          <span>• GOKULAM & JAYALAKSHMIPURAM EXPRESS HUBS</span>
           <span className="text-champagne-400">★ 5 BIOMIMETIC CERAMIDES</span>
-          <span>• HYPERLOCAL FRESH PACKAGING</span>
+          <span>• MYSURU HYPERLOCAL COMMERCE</span>
           <span className="text-rose">★ HAUTE QUICK-COMMERCE</span>
-          <span>• CLINICALLY PROVEN ACTIVES</span>
-          <span className="text-champagne-400">★ COLD-CHAIN DISPATCHED IN 15 MINS</span>
-          <span>• 100% DERMATOLOGICALLY VERIFIED</span>
+          <span>• TEMPERATURE-MONITORED STORAGE</span>
+          <span className="text-champagne-400">★ DISPATCHED WITHIN 15 MINS</span>
+          <span>• 100% GENUINE BATCHES</span>
         </div>
       </div>
 
@@ -354,10 +393,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         {/* Highlighted Step Feature Banner */}
         {routineSteps[activeRoutineStep].heroProd && (
           <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EFE7E1] shadow-card grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            <div className="md:col-span-5 aspect-square max-w-sm mx-auto bg-[#FAF7F4] rounded-2xl p-6 flex items-center justify-center border border-[#EFE7E1]">
-              <img
-                src={routineSteps[activeRoutineStep].heroProd.images[0] || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80'}
+            <div className="md:col-span-5 aspect-square max-w-sm mx-auto bg-[#FAF7F4] rounded-2xl p-4 flex items-center justify-center border border-[#EFE7E1] overflow-hidden">
+              <ProductImage
+                src={routineSteps[activeRoutineStep].heroProd.images[0]}
                 alt={routineSteps[activeRoutineStep].heroProd.name}
+                brand={routineSteps[activeRoutineStep].heroProd.brand}
+                category={routineSteps[activeRoutineStep].heroProd.category}
                 className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -480,7 +521,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Why 15-Minute Cold Delivery Matters for Active Skincare.
               </h2>
               <p className="text-xs sm:text-sm text-charcoal/70 leading-relaxed font-sans font-normal">
-                Active vitamins (like L-Ascorbic Acid) and bio-peptides degrade when sitting in transit warehouses for days. Dew & Go operates temperature-monitored dark stores across Bengaluru, dispatching within 2 minutes of checkout.
+                Active vitamins (like L-Ascorbic Acid) and bio-peptides degrade when sitting in transit warehouses for days. Dew & Go operates temperature-monitored dark stores in Mysuru, dispatching within 2 minutes of checkout from our Gokulam micro-hub.
               </p>
 
               <div className="grid grid-cols-2 gap-4 pt-2">
@@ -492,7 +533,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 <div className="glass-pill p-4 rounded-2xl border border-white/80 space-y-1">
                   <span className="font-mono text-2xl font-black text-champagne-600 block">15m</span>
                   <span className="text-xs font-bold text-charcoal block">Average Delivery</span>
-                  <p className="text-[10px] text-muted">Dedicated electric fleet across Indiranagar & Koramangala.</p>
+                  <p className="text-[10px] text-muted">Dedicated electric fleet across Gokulam & Mysuru express hubs.</p>
                 </div>
               </div>
 

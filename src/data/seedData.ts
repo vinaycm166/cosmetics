@@ -673,6 +673,45 @@ export const INITIAL_PRODUCTS: Product[] = [
 
 export const INITIAL_DELIVERY_ZONES: DeliveryZone[] = [
   {
+    id: 'zone-mysuru-gokulam',
+    zoneName: 'Gokulam Express Hub (Mysuru)',
+    supportedPincodes: ['570002'],
+    deliveryFee: 49,
+    freeDeliveryThreshold: 499,
+    minOrderValue: 99,
+    prepTimeMinutes: 5,
+    estimatedDeliveryMinutes: 15,
+    operatingHoursStart: '07:00:00',
+    operatingHoursEnd: '23:00:00',
+    isActive: true
+  },
+  {
+    id: 'zone-mysuru-jayalakshmipuram',
+    zoneName: 'Jayalakshmipuram & Saraswathipuram Hub (Mysuru)',
+    supportedPincodes: ['570012', '570009'],
+    deliveryFee: 49,
+    freeDeliveryThreshold: 499,
+    minOrderValue: 99,
+    prepTimeMinutes: 5,
+    estimatedDeliveryMinutes: 20,
+    operatingHoursStart: '07:00:00',
+    operatingHoursEnd: '23:00:00',
+    isActive: true
+  },
+  {
+    id: 'zone-mysuru-vijayanagar',
+    zoneName: 'Vijayanagar Express Hub (Mysuru)',
+    supportedPincodes: ['570017'],
+    deliveryFee: 49,
+    freeDeliveryThreshold: 499,
+    minOrderValue: 99,
+    prepTimeMinutes: 5,
+    estimatedDeliveryMinutes: 25,
+    operatingHoursStart: '07:00:00',
+    operatingHoursEnd: '23:00:00',
+    isActive: true
+  },
+  {
     id: 'zone-blr-central',
     zoneName: 'Central Bengaluru & CBD (Express)',
     supportedPincodes: ['560001', '560002', '560025'],

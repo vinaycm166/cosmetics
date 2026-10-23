@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   // Rotating promotional announcements
   const announcements = [
     { text: '✨ Flash Beauty Deal: 20% OFF with code DEWGLOW20 on your routine', link: '/offers' },
-    { text: '⚡ Ultra-fresh cosmetics delivered in 15 mins across Indiranagar, Koramangala & Delhi', link: '/shipping-policy' },
+    { text: '⚡ Ultra-fresh cosmetics delivered in 15 mins across Gokulam & Mysuru express hubs', link: '/shipping-policy' },
     { text: '🎁 Free luxury travel sample & free delivery on orders above ₹499', link: '/shop' }
   ];
 

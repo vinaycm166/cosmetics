@@ -22,17 +22,27 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [selectedPinCode, setSelectedPinCode] = useState<string>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_LOCATION);
-      if (stored) return JSON.parse(stored).pinCode;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.pinCode && parsed.pinCode !== '560038') {
+          return parsed.pinCode;
+        }
+      }
     } catch {}
-    return '560038'; // Indiranagar, Bengaluru
+    return '570002'; // Gokulam, Mysuru
   });
 
   const [selectedArea, setSelectedArea] = useState<string>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_LOCATION);
-      if (stored) return JSON.parse(stored).area;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.area && !parsed.area.includes('Indiranagar')) {
+          return parsed.area;
+        }
+      }
     } catch {}
-    return 'Indiranagar, Bengaluru';
+    return 'Gokulam, Mysuru';
   });
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);

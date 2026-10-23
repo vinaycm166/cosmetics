@@ -26,6 +26,8 @@ import {
   ChevronRight,
   ExternalLink,
   FileSpreadsheet,
+  Image as ImageIcon,
+  UploadCloud,
   X
 } from 'lucide-react';
 import { store, StoreSettings, InventoryLog } from '../lib/store';
@@ -33,6 +35,7 @@ import { useAuth } from '../context/AuthContext';
 import { Order, OrderStatus, Product, Coupon } from '../types';
 import { BulkImportView } from '../components/admin/BulkImportView';
 import { DispatchDashboard } from '../components/admin/DispatchDashboard';
+import { ProductImage, isValidImageUrl } from '../components/common/ProductImage';
 
 interface AdminPageProps {
   onNavigate: (route: string) => void;
@@ -68,6 +71,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const totalProductsCount = allProducts.length;
   const publishedProductsCount = useMemo(() => allProducts.filter(p => p.isPublished && p.status !== 'draft').length, [allProducts]);
   const draftProductsCount = useMemo(() => allProducts.filter(p => p.status === 'draft' || !p.isPublished).length, [allProducts]);
+  const validImagesCount = useMemo(() => allProducts.filter(p => p.images[0] && isValidImageUrl(p.images[0])).length, [allProducts]);
+  const missingImagesCount = totalProductsCount - validImagesCount;
   const lowStockProductsCount = useMemo(() => allProducts.filter(p => p.variants.reduce((s, v) => s + v.stockQuantity, 0) < 10).length, [allProducts]);
   const ordersAwaitingProcessingCount = useMemo(() => allOrders.filter(o => o.status === 'pending_payment' || o.status === 'confirmed').length, [allOrders]);
   const paidOrdersCount = useMemo(() => allOrders.filter(o => o.paymentStatus === 'paid').length, [allOrders]);
@@ -117,6 +122,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [productSearchQuery, setProductSearchQuery] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
   const [productStatusFilter, setProductStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [productImageFilter, setProductImageFilter] = useState<'all' | 'verified' | 'missing'>('all');
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [productForm, setProductForm] = useState({
@@ -213,6 +219,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       if (productStatusFilter === 'published' && (p.status === 'draft' || !p.isPublished)) return false;
       if (productStatusFilter === 'draft' && p.status !== 'draft' && p.isPublished) return false;
       if (productCategoryFilter !== 'all' && p.category.toLowerCase() !== productCategoryFilter.toLowerCase()) return false;
+      if (productImageFilter === 'verified' && (!p.images[0] || !isValidImageUrl(p.images[0]))) return false;
+      if (productImageFilter === 'missing' && p.images[0] && isValidImageUrl(p.images[0])) return false;
       if (productSearchQuery) {
         const q = productSearchQuery.toLowerCase();
         return p.name.toLowerCase().includes(q) || 
@@ -221,7 +229,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       }
       return true;
     });
-  }, [allProducts, productStatusFilter, productCategoryFilter, productSearchQuery]);
+  }, [allProducts, productStatusFilter, productCategoryFilter, productImageFilter, productSearchQuery]);
 
   // Product Create & Edit Handlers
   const handleOpenCreateProduct = () => {
@@ -261,6 +269,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       error: ''
     });
     setProductModalOpen(true);
+  };
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setProductForm(prev => ({ ...prev, error: 'Please select a valid image file (PNG, JPG, WEBP).' }));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      const dataUrl = uploadEvent.target?.result as string;
+      if (dataUrl) {
+        setProductForm(prev => ({ ...prev, imageUrl: dataUrl, error: '' }));
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProduct = (e: React.FormEvent) => {
@@ -861,6 +886,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       <option value="draft">Drafts ({draftProductsCount})</option>
                     </select>
                     <select
+                      value={productImageFilter}
+                      onChange={e => setProductImageFilter(e.target.value as any)}
+                      className="px-3 py-1.5 text-xs rounded-md border border-neutral-border bg-white font-medium"
+                    >
+                      <option value="all">All Images ({allProducts.length})</option>
+                      <option value="verified">Verified Photos ({validImagesCount})</option>
+                      <option value="missing">Missing / Pending ({missingImagesCount})</option>
+                    </select>
+                    <select
                       value={productCategoryFilter}
                       onChange={e => setProductCategoryFilter(e.target.value)}
                       className="px-3 py-1.5 text-xs rounded-md border border-neutral-border bg-white"
@@ -900,20 +934,39 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           const isDraft = p.status === 'draft' || !p.isPublished;
                           const primarySku = p.variants[0]?.sku || '—';
                           const primaryBarcode = (p.variants[0] as any)?.barcode || '—';
+                          const hasPhoto = isValidImageUrl(p.images[0]);
 
                           return (
                             <tr key={p.id} className="hover:bg-neutral-50/60">
                               <td className="p-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-md bg-[#FAF7F4] border border-neutral-border/60 p-0.5 flex items-center justify-center shrink-0">
-                                    {p.images[0] ? (
-                                      <img src={p.images[0]} alt={p.name} className="w-full h-full object-contain" />
-                                    ) : (
-                                      <ShoppingBag className="w-4 h-4 text-muted" />
-                                    )}
+                                  <div className="w-10 h-10 rounded-md bg-[#FAF7F4] border border-neutral-border/60 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                                    <ProductImage
+                                      src={p.images[0]}
+                                      alt={p.name}
+                                      brand={p.brand}
+                                      className="w-full h-full object-contain"
+                                      badge={false}
+                                    />
                                   </div>
                                   <div>
-                                    <span className="font-bold text-charcoal-900 block truncate max-w-[200px]">{p.name}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-charcoal-900 block truncate max-w-[200px]">{p.name}</span>
+                                      {hasPhoto ? (
+                                        <span className="text-[9px] font-semibold text-mint-700 bg-mint-50 px-1.5 py-0.2 rounded border border-mint-200">
+                                          Photo ✓
+                                        </span>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenEditProduct(p)}
+                                          className="text-[9px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 px-1.5 py-0.2 rounded border border-amber-200"
+                                          title="Click to add verified product photograph"
+                                        >
+                                          + Add Photo
+                                        </button>
+                                      )}
+                                    </div>
                                     <span className="text-[10px] text-muted">{p.brand}</span>
                                   </div>
                                 </div>
@@ -1771,15 +1824,66 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-charcoal-900 mb-1">Image URL</label>
-                  <input
-                    type="url"
-                    value={productForm.imageUrl}
-                    onChange={e => setProductForm({ ...productForm, imageUrl: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 rounded-md border border-neutral-border bg-white text-xs"
-                  />
+                <div className="sm:col-span-2 bg-[#FAF7F4] p-3 rounded-md border border-neutral-border">
+                  <div className="flex flex-col sm:flex-row gap-3 items-start">
+                    <div className="w-20 h-20 rounded-md border border-neutral-border bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                      <ProductImage
+                        src={productForm.imageUrl}
+                        alt={productForm.name || 'Preview'}
+                        brand={productForm.brand}
+                        className="w-full h-full object-contain"
+                        badge={false}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2 w-full">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block font-semibold text-charcoal-900 text-xs">Product Photograph</label>
+                          {isValidImageUrl(productForm.imageUrl) ? (
+                            <span className="text-[10px] font-bold text-mint-700 bg-mint-50 px-2 py-0.5 rounded border border-mint-200">
+                              Verified Photograph ✓
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                              Missing / Pending Real Photo
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="url"
+                          value={productForm.imageUrl}
+                          onChange={e => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                          placeholder="Paste verified image URL (https://...)"
+                          className="w-full px-3 py-1.5 rounded-md border border-neutral-border bg-white text-xs font-mono"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label className="dew-btn-secondary !py-1 !px-3 text-xs cursor-pointer flex items-center gap-1.5">
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>Upload Local Photo</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/jpg"
+                            className="hidden"
+                            onChange={handleImageFileUpload}
+                          />
+                        </label>
+                        {productForm.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setProductForm({ ...productForm, imageUrl: '' })}
+                            className="text-xs text-rose-600 hover:text-rose-700 underline"
+                          >
+                            Remove
+                          </button>
+                        )}
+                        <span className="text-[10px] text-muted">
+                          Accepts verified brand packaging or studio shots (.jpg, .png, .webp)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="sm:col-span-2 pt-2 border-t border-neutral-100">
