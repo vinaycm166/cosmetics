@@ -90,6 +90,151 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
 
   const hasActiveFilters = selectedCategory !== 'all' || selectedBrand !== 'all' || selectedSkinConcern !== 'all' || inStockOnly || maxPrice < 3000;
 
+  const renderFilterContent = () => (
+    <div className="bg-white p-5 sm:p-6 rounded-2xl md:rounded-3xl border border-[#EFE7E1] shadow-subtle space-y-6">
+      <div className="flex items-center justify-between pb-3 border-b border-[#EFE7E1]">
+        <span className="font-heading font-extrabold text-xs uppercase tracking-widest text-charcoal flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-berry" />
+          <span>Filter Formulations</span>
+        </span>
+        <button
+          onClick={resetFilters}
+          className="text-xs font-bold text-berry hover:underline cursor-pointer"
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Category Filter */}
+      <div>
+        <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
+          Category
+        </h4>
+        <div className="space-y-1 text-xs">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+              selectedCategory === 'all' 
+                ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                : 'text-charcoal hover:bg-[#FAF7F4]'
+            }`}
+          >
+            All Categories ({allProducts.length})
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.slug)}
+              className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                selectedCategory === cat.slug 
+                  ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                  : 'text-charcoal hover:bg-[#FAF7F4]'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Brand Filter */}
+      <div className="pt-4 border-t border-[#EFE7E1]">
+        <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
+          Brand
+        </h4>
+        <div className="space-y-1 text-xs max-h-48 overflow-y-auto pr-1">
+          <button
+            onClick={() => setSelectedBrand('all')}
+            className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+              selectedBrand === 'all' 
+                ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                : 'text-charcoal hover:bg-[#FAF7F4]'
+            }`}
+          >
+            All Brands
+          </button>
+          {availableBrands.map(b => (
+            <button
+              key={b}
+              onClick={() => setSelectedBrand(b)}
+              className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                selectedBrand === b 
+                  ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                  : 'text-charcoal hover:bg-[#FAF7F4]'
+              }`}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Skin Concern Filter */}
+      {availableConcerns.length > 0 && (
+        <div className="pt-4 border-t border-[#EFE7E1]">
+          <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
+            Skin Target
+          </h4>
+          <div className="space-y-1 text-xs">
+            <button
+              onClick={() => setSelectedSkinConcern('all')}
+              className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                selectedSkinConcern === 'all' 
+                  ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                  : 'text-charcoal hover:bg-[#FAF7F4]'
+              }`}
+            >
+              All Skin Concerns
+            </button>
+            {availableConcerns.map(c => (
+              <button
+                key={c}
+                onClick={() => setSelectedSkinConcern(c)}
+                className={`w-full text-left px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                  selectedSkinConcern === c 
+                    ? 'bg-berry text-white font-extrabold shadow-subtle' 
+                    : 'text-charcoal hover:bg-[#FAF7F4]'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Price Filter */}
+      <div className="pt-4 border-t border-[#EFE7E1]">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="font-black uppercase tracking-widest text-[11px] text-muted">Max Price</span>
+          <span className="font-extrabold text-charcoal">₹{maxPrice}</span>
+        </div>
+        <input
+          type="range"
+          min="200"
+          max="3000"
+          step="50"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(Number(e.target.value))}
+          className="w-full accent-berry cursor-pointer"
+        />
+      </div>
+
+      {/* In Stock Only Checkbox */}
+      <div className="pt-4 border-t border-[#EFE7E1]">
+        <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal cursor-pointer">
+          <input
+            type="checkbox"
+            checked={inStockOnly}
+            onChange={(e) => setInStockOnly(e.target.checked)}
+            className="rounded border-[#EFE7E1] text-berry focus:ring-berry"
+          />
+          <span>In Stock & Ready (15m Dispatch)</span>
+        </label>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
@@ -208,153 +353,54 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
         </div>
       )}
 
+      {/* Mobile Accessible Filter Drawer Modal */}
+      {mobileFilterOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex justify-end">
+          <div 
+            className="fixed inset-0 bg-charcoal/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileFilterOpen(false)}
+          />
+          <div className="relative w-full max-w-xs bg-[#FAF7F4] h-full shadow-2xl flex flex-col z-10 animate-fade-in">
+            <div className="flex items-center justify-between p-4 bg-white border-b border-[#EFE7E1]">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-burgundy" />
+                <span className="font-heading font-extrabold text-xs uppercase tracking-wider text-charcoal">Filter Formulations</span>
+              </div>
+              <button 
+                onClick={() => setMobileFilterOpen(false)}
+                className="p-1.5 rounded-full hover:bg-neutral-100 text-charcoal cursor-pointer"
+                aria-label="Close filters"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {renderFilterContent()}
+            </div>
+            <div className="p-4 border-t border-[#EFE7E1] bg-white flex gap-2 shrink-0">
+              <button 
+                onClick={resetFilters}
+                className="flex-1 py-2.5 rounded-xl border border-[#EFE7E1] text-xs font-bold text-charcoal hover:bg-neutral-50 cursor-pointer"
+              >
+                Reset All
+              </button>
+              <button 
+                onClick={() => setMobileFilterOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-burgundy text-white text-xs font-bold hover:bg-burgundy-dark shadow-xs cursor-pointer"
+              >
+                View ({filteredProducts.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Grid with Sidebar */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         
-        {/* Left Filter Sidebar */}
-        <aside className={`md:block space-y-6 ${mobileFilterOpen ? 'block' : 'hidden'}`}>
-          <div className="bg-white p-6 rounded-3xl border border-[#EFE7E1] shadow-subtle space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFE7E1]">
-              <span className="font-heading font-extrabold text-xs uppercase tracking-widest text-charcoal flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5 text-berry" />
-                <span>Filter Formulations</span>
-              </span>
-              <button
-                onClick={resetFilters}
-                className="text-xs font-bold text-berry hover:underline"
-              >
-                Reset
-              </button>
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
-                Category
-              </h4>
-              <div className="space-y-1 text-xs">
-                <button
-                  onClick={() => setSelectedCategory('all')}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                    selectedCategory === 'all' 
-                      ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                      : 'text-charcoal hover:bg-[#FAF7F4]'
-                  }`}
-                >
-                  All Categories ({allProducts.length})
-                </button>
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.slug)}
-                    className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                      selectedCategory === cat.slug 
-                        ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                        : 'text-charcoal hover:bg-[#FAF7F4]'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Brand Filter */}
-            <div className="pt-4 border-t border-[#EFE7E1]">
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
-                Brand
-              </h4>
-              <div className="space-y-1 text-xs max-h-48 overflow-y-auto pr-1">
-                <button
-                  onClick={() => setSelectedBrand('all')}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                    selectedBrand === 'all' 
-                      ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                      : 'text-charcoal hover:bg-[#FAF7F4]'
-                  }`}
-                >
-                  All Brands
-                </button>
-                {availableBrands.map(b => (
-                  <button
-                    key={b}
-                    onClick={() => setSelectedBrand(b)}
-                    className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                      selectedBrand === b 
-                        ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                        : 'text-charcoal hover:bg-[#FAF7F4]'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Skin Concern Filter */}
-            {availableConcerns.length > 0 && (
-              <div className="pt-4 border-t border-[#EFE7E1]">
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted mb-2.5">
-                  Skin Target
-                </h4>
-                <div className="space-y-1 text-xs">
-                  <button
-                    onClick={() => setSelectedSkinConcern('all')}
-                    className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                      selectedSkinConcern === 'all' 
-                        ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                        : 'text-charcoal hover:bg-[#FAF7F4]'
-                    }`}
-                  >
-                    All Skin Concerns
-                  </button>
-                  {availableConcerns.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => setSelectedSkinConcern(c)}
-                      className={`w-full text-left px-3 py-2 rounded-xl transition-all ${
-                        selectedSkinConcern === c 
-                          ? 'bg-berry text-white font-extrabold shadow-subtle' 
-                          : 'text-charcoal hover:bg-[#FAF7F4]'
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Price Filter */}
-            <div className="pt-4 border-t border-[#EFE7E1]">
-              <div className="flex items-center justify-between text-xs mb-2">
-                <span className="font-black uppercase tracking-widest text-[11px] text-muted">Max Price</span>
-                <span className="font-extrabold text-charcoal">₹{maxPrice}</span>
-              </div>
-              <input
-                type="range"
-                min="200"
-                max="3000"
-                step="50"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-berry cursor-pointer"
-              />
-            </div>
-
-            {/* In Stock Only Checkbox */}
-            <div className="pt-4 border-t border-[#EFE7E1]">
-              <label className="flex items-center gap-2.5 text-xs font-bold text-charcoal cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="rounded border-[#EFE7E1] text-berry focus:ring-berry"
-                />
-                <span>In Stock & Ready (15m Dispatch)</span>
-              </label>
-            </div>
-          </div>
+        {/* Left Filter Sidebar (Desktop) */}
+        <aside className="hidden md:block space-y-6">
+          {renderFilterContent()}
         </aside>
 
         {/* Right Product Grid */}

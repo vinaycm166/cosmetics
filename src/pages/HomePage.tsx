@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   ArrowRight, 
   ShieldCheck, 
@@ -131,28 +131,61 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     }
   };
 
-  // Flagship bestsellers matching actual catalogue
-  const flagshipBestsellers = [
-    allProducts.find(p => p.id === 'prod-cerave-hydrating') || allProducts[0],
-    allProducts.find(p => p.id === 'prod-minimalist-nia') || allProducts[1],
-    allProducts.find(p => p.id === 'prod-loreal-revitalift') || allProducts[2],
-    allProducts.find(p => p.id === 'prod-maybelline-skyhigh') || allProducts[3],
-    allProducts.find(p => p.id === 'prod-ordinary-ha') || allProducts[4],
-  ].filter(Boolean) as Product[];
+  // Flagship bestsellers matching actual catalogue with safe fallbacks
+  const flagshipBestsellers = useMemo<Product[]>(() => {
+    const preferredIds = [
+      'prod-cerave-hydrating',
+      'prod-minimalist-nia',
+      'prod-loreal-revitalift',
+      'prod-maybelline-skyhigh',
+      'prod-ordinary-ha'
+    ];
+    const picked: Product[] = [];
+    for (const id of preferredIds) {
+      const match = allProducts.find(p => p.id === id);
+      if (match && !picked.some(p => p.id === match.id)) {
+        picked.push(match);
+      }
+    }
+    // Fill remaining slots up to 5 from published products
+    for (const p of allProducts) {
+      if (picked.length >= 5) break;
+      if (!picked.some(item => item.id === p.id)) {
+        picked.push(p);
+      }
+    }
+    // If published products are temporarily empty, fallback to store products
+    if (picked.length === 0) {
+      const storeProds = store.getProducts();
+      return storeProds.slice(0, 5);
+    }
+    return picked;
+  }, [allProducts]);
 
   // Filtered bestsellers based on user tab selection
-  const filteredBestsellers = activeBestsellerCategory === 'all'
-    ? flagshipBestsellers
-    : allProducts.filter(p => {
-        if (activeBestsellerCategory === 'skincare') return p.category.toLowerCase().includes('skin') || p.category.toLowerCase().includes('serum');
-        if (activeBestsellerCategory === 'makeup') return p.category.toLowerCase().includes('make') || p.category.toLowerCase().includes('lip');
-        if (activeBestsellerCategory === 'haircare') return p.category.toLowerCase().includes('hair');
-        if (activeBestsellerCategory === 'offers') return p.defaultDiscount && p.defaultDiscount >= 18;
-        return true;
-      }).slice(0, 5);
+  const filteredBestsellers = useMemo<Product[]>(() => {
+    if (activeBestsellerCategory === 'all') return flagshipBestsellers;
+    const matches = allProducts.filter(p => {
+      const cat = p.category?.toLowerCase() || '';
+      if (activeBestsellerCategory === 'skincare') return cat.includes('skin') || cat.includes('serum') || cat.includes('cream');
+      if (activeBestsellerCategory === 'makeup') return cat.includes('make') || cat.includes('lip') || cat.includes('tint');
+      if (activeBestsellerCategory === 'haircare') return cat.includes('hair') || cat.includes('scalp');
+      if (activeBestsellerCategory === 'offers') return (p.defaultDiscount && p.defaultDiscount >= 15) || (p.mrp && p.defaultPrice && p.mrp > p.defaultPrice);
+      return true;
+    }).slice(0, 5);
 
-  // Crown Star Product for 3D Dimensional Spotlight
-  const starProduct = allProducts.find(p => p.id === 'prod-cerave-hydrating') || allProducts[0];
+    return matches.length > 0 ? matches : flagshipBestsellers;
+  }, [allProducts, activeBestsellerCategory, flagshipBestsellers]);
+
+  // Crown Star Product for 3D Dimensional Spotlight (strictly guarded)
+  const starProduct = useMemo<Product | undefined>(() => {
+    return allProducts.find(p => p.id === 'prod-cerave-hydrating') ||
+           allProducts.find(p => p.isBestseller) ||
+           allProducts.find(p => p.isFeatured) ||
+           allProducts[0] ||
+           store.getProductById('prod-cerave-hydrating') ||
+           store.getProducts()[0];
+  }, [allProducts]);
 
   // Large Image-Led Editorial Category Gallery
   const editorialDepartments = [
@@ -291,19 +324,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </div>
 
         {/* OVERLAPPING EDITORIAL TYPOGRAPHY & INTERFACE (LEFT 45-50%) */}
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative z-20">
-          <div className="max-w-2xl space-y-6 text-left">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-32 sm:pt-12 sm:pb-24 lg:py-20 relative z-20">
+          <div className="max-w-2xl space-y-5 sm:space-y-6 text-left">
             
             {/* Campaign Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EBDCD3] shadow-xs backdrop-blur-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white/95 border border-[#EBDCD3] shadow-xs backdrop-blur-xs">
               <span className="w-2 h-2 rounded-full bg-burgundy animate-ping" />
-              <span className="text-[11px] font-bold tracking-[0.2em] text-burgundy uppercase font-mono">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-burgundy uppercase font-mono">
                 GOKULAM, MYSURU • SPRING 2026 EDIT
               </span>
             </div>
 
-            {/* Monumental Editorial Headline */}
-            <h1 className="font-editorial text-5xl sm:text-7xl lg:text-8xl xl:text-8.5xl font-bold text-charcoal leading-[0.94] tracking-tight drop-shadow-xs">
+            {/* Monumental Editorial Headline (fluid responsive scaling) */}
+            <h1 className="font-editorial text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-7.5xl xl:text-8xl font-bold text-charcoal leading-[0.98] sm:leading-[0.94] tracking-tight drop-shadow-xs break-words">
               PURE ACTIVES. <br />
               <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-burgundy via-[#8B263E] to-[#E76F51]">
                 UNFILTERED
@@ -311,15 +344,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               GLOW.
             </h1>
             
-            <p className="text-sm sm:text-base lg:text-lg text-charcoal/85 max-w-md font-sans leading-relaxed">
+            <p className="text-xs sm:text-base lg:text-lg text-charcoal/85 max-w-md font-sans leading-relaxed">
               Dermatologist-formulated barrier care, dewy clean makeup & luxury fragrance. Stored at 18–22°C in Gokulam and hand-delivered in 30–45 minutes.
             </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            {/* Action Buttons (stacked on mobile, inline on desktop) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full max-w-md">
               <button
                 onClick={() => onNavigate('/shop')}
-                className="px-8 py-4 rounded-full bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md hover:shadow-2xl hover:scale-102 flex items-center gap-3 cursor-pointer group active:scale-95"
+                className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-full bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md hover:shadow-2xl hover:scale-102 flex items-center justify-center gap-3 cursor-pointer group active:scale-95"
               >
                 <span>Shop The Collection</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
@@ -329,22 +362,22 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   const el = document.getElementById('scene-crown-spotlight');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-6 py-4 rounded-full bg-white/95 backdrop-blur-md hover:bg-white text-charcoal border border-[#E2D5CC] text-xs font-bold tracking-wider uppercase transition-all shadow-xs hover:border-burgundy/40 cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3.5 sm:px-6 sm:py-4 rounded-full bg-white/95 backdrop-blur-md hover:bg-white text-charcoal border border-[#E2D5CC] text-xs font-bold tracking-wider uppercase transition-all shadow-xs hover:border-burgundy/40 cursor-pointer text-center"
               >
                 Discover Crown Formula ↓
               </button>
             </div>
 
             {/* Verified Shopper Proof */}
-            <div className="flex items-center gap-3 pt-3">
-              <div className="flex -space-x-2 overflow-hidden">
+            <div className="flex items-center gap-2.5 sm:gap-3 pt-2">
+              <div className="flex -space-x-2 overflow-hidden shrink-0">
                 {[
                   { name: 'Pooja R.', initials: 'PR', bg: 'bg-[#982245]', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80' },
                   { name: 'Ananya N.', initials: 'AN', bg: 'bg-[#E76F51]', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
                   { name: 'Dr. Shruti K.', initials: 'SK', bg: 'bg-[#2A9D8F]', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80' }
                 ].map((shopper, i) => (
-                  <div key={i} className="relative inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden shadow-2xs">
-                    <div className={`w-full h-full ${shopper.bg} text-white flex items-center justify-center text-[10px] font-bold select-none`}>
+                  <div key={i} className="relative inline-block h-7 w-7 sm:h-8 sm:w-8 rounded-full ring-2 ring-white overflow-hidden shadow-2xs">
+                    <div className={`w-full h-full ${shopper.bg} text-white flex items-center justify-center text-[9px] sm:text-[10px] font-bold select-none`}>
                       {shopper.initials}
                     </div>
                     <img
@@ -356,12 +389,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   </div>
                 ))}
               </div>
-              <div className="text-xs">
+              <div className="text-xs leading-tight">
                 <div className="flex items-center gap-1 text-amber-500 font-bold">
                   <span>★★★★★</span>
-                  <span className="text-charcoal text-[11px] font-semibold">4.9 / 5.0</span>
+                  <span className="text-charcoal text-[10px] sm:text-[11px] font-semibold">4.9 / 5.0</span>
                 </div>
-                <span className="text-[10px] text-muted">2,400+ Verified Gokulam & Mysuru Orders</span>
+                <span className="text-[9px] sm:text-[10px] text-muted block truncate max-w-[210px] sm:max-w-none">2,400+ Verified Gokulam & Mysuru Orders</span>
               </div>
             </div>
 
@@ -369,45 +402,45 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </div>
 
         {/* 4 Bottom Trust Seals Bar */}
-        <div className="absolute inset-x-0 bottom-0 bg-[#FAF5F0]/90 backdrop-blur-md border-t border-[#EAE0D6]/80 py-3 z-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
-                <Zap className="w-3.5 h-3.5 text-burgundy" />
+        <div className="absolute inset-x-0 bottom-0 bg-[#FAF5F0]/95 backdrop-blur-md border-t border-[#EAE0D6]/80 py-2.5 sm:py-3 z-20">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 text-left">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-burgundy" />
               </div>
-              <div className="leading-tight">
-                <span className="font-bold text-charcoal text-[11px] block">30–45 Mins</span>
-                <span className="text-[10px] text-muted">Gokulam Express Drop</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
-                <ShieldCheck className="w-3.5 h-3.5 text-burgundy" />
-              </div>
-              <div className="leading-tight">
-                <span className="font-bold text-charcoal text-[11px] block">100% Authentic</span>
-                <span className="text-[10px] text-muted">Direct Lab Sourcing</span>
+              <div className="leading-tight min-w-0">
+                <span className="font-bold text-charcoal text-[10px] sm:text-[11px] block truncate">30–45 Mins</span>
+                <span className="text-[9px] sm:text-[10px] text-muted block truncate">Gokulam Express Drop</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
-                <RotateCcw className="w-3.5 h-3.5 text-burgundy" />
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-burgundy" />
               </div>
-              <div className="leading-tight">
-                <span className="font-bold text-charcoal text-[11px] block">7-Day Return</span>
-                <span className="text-[10px] text-muted">Doorstep Rider Pickup</span>
+              <div className="leading-tight min-w-0">
+                <span className="font-bold text-charcoal text-[10px] sm:text-[11px] block truncate">100% Authentic</span>
+                <span className="text-[9px] sm:text-[10px] text-muted block truncate">Direct Lab Sourcing</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
-                <CreditCard className="w-3.5 h-3.5 text-burgundy" />
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-burgundy" />
               </div>
-              <div className="leading-tight">
-                <span className="font-bold text-charcoal text-[11px] block">UPI & COD</span>
-                <span className="text-[10px] text-muted">Razorpay Protected</span>
+              <div className="leading-tight min-w-0">
+                <span className="font-bold text-charcoal text-[10px] sm:text-[11px] block truncate">7-Day Return</span>
+                <span className="text-[9px] sm:text-[10px] text-muted block truncate">Doorstep Rider Pickup</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <CreditCard className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-burgundy" />
+              </div>
+              <div className="leading-tight min-w-0">
+                <span className="font-bold text-charcoal text-[10px] sm:text-[11px] block truncate">UPI & COD</span>
+                <span className="text-[9px] sm:text-[10px] text-muted block truncate">Razorpay Protected</span>
               </div>
             </div>
           </div>
@@ -493,143 +526,170 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </div>
 
         {/* 3D Tilt Stage Container */}
-        <div 
-          ref={spotlightRef}
-          style={{
-            ...spotlightTiltStyle,
-            transformStyle: 'preserve-3d'
-          }}
-          className="relative rounded-3xl bg-white border border-[#EAE0D6] p-6 sm:p-10 lg:p-12 shadow-card grid grid-cols-1 lg:grid-cols-12 gap-8 items-center cursor-default transition-shadow duration-300 hover:shadow-2xl"
-        >
-          {/* Left Column: Product Image with 3D Depth Layering (translateZ: 50px) */}
-          <div className="lg:col-span-5 flex items-center justify-center relative" style={{ transformStyle: 'preserve-3d' }}>
-            <div 
-              style={{ transform: 'translateZ(50px)' }}
-              className="relative w-72 h-72 sm:w-84 sm:h-84 rounded-2xl bg-gradient-to-b from-[#FBF6F2] to-[#F5ECE5] border border-[#EAE0D6] p-6 flex items-center justify-center shadow-inner overflow-hidden"
-            >
-              <ProductImage
-                src={starProduct.images[0]}
-                alt={starProduct.name}
-                brand={starProduct.brand}
-                category={starProduct.category}
-                className="w-full h-full object-contain filter drop-shadow-2xl hover:scale-106 transition-transform duration-500"
-              />
-              <span className="absolute top-4 left-4 bg-[#FEF3EB] text-[#C25E1A] px-2.5 py-1 rounded text-[10px] font-bold tracking-wide shadow-2xs z-10">
-                ★ Mysuru's #1 Bestseller
-              </span>
-            </div>
-          </div>
-
-          {/* Right Column: Active Ingredients & Direct Buy (translateZ: 25px) */}
-          <div className="lg:col-span-7 space-y-5 text-left" style={{ transform: 'translateZ(25px)' }}>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-burgundy uppercase tracking-wider bg-burgundy/5 px-2.5 py-1 rounded-md">
-                {starProduct.brand}
-              </span>
-              <span className="text-xs font-semibold text-muted">
-                {starProduct.category}
-              </span>
-            </div>
-
-            <h3 className="font-editorial text-2xl sm:text-3xl lg:text-4xl font-bold text-charcoal">
-              {starProduct.name}
-            </h3>
-
-            <p className="text-xs sm:text-sm text-charcoal/80 leading-relaxed max-w-xl">
-              {starProduct.description}
-            </p>
-
-            {/* Active Ingredients Tags */}
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-mono uppercase font-bold text-muted tracking-wider block">
-                Active Formulation Profile:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  '3 Essential Ceramides (1, 3, 6-II)',
-                  'Pure Hyaluronic Acid Deep Moisture',
-                  'MVE 24-Hour Controlled Release',
-                  'Non-Comedogenic & Fragrance Free'
-                ].map((ing, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5F2] border border-[#EAE0D7] text-[11px] font-medium text-charcoal shadow-2xs"
-                  >
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    <span>{ing}</span>
-                  </span>
-                ))}
+        {starProduct && (
+          <div 
+            ref={spotlightRef}
+            style={{
+              ...spotlightTiltStyle,
+              transformStyle: 'preserve-3d'
+            }}
+            className="relative rounded-3xl bg-white border border-[#EAE0D6] p-5 sm:p-8 lg:p-12 shadow-card grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center cursor-default transition-shadow duration-300 hover:shadow-2xl"
+          >
+            {/* Left Column: Product Image with 3D Depth Layering (translateZ: 50px) */}
+            <div className="lg:col-span-5 flex items-center justify-center relative" style={{ transformStyle: 'preserve-3d' }}>
+              <div 
+                style={{ transform: 'translateZ(50px)' }}
+                className="relative w-full max-w-[240px] sm:max-w-[280px] lg:max-w-[340px] aspect-square rounded-2xl bg-gradient-to-b from-[#FBF6F2] to-[#F5ECE5] border border-[#EAE0D6] p-4 sm:p-6 flex items-center justify-center shadow-inner overflow-hidden"
+              >
+                <ProductImage
+                  src={starProduct.images?.[0] || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80'}
+                  alt={starProduct.name}
+                  brand={starProduct.brand}
+                  category={starProduct.category}
+                  className="w-full h-full object-contain filter drop-shadow-2xl hover:scale-106 transition-transform duration-500"
+                />
+                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#FEF3EB] text-[#C25E1A] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold tracking-wide shadow-2xs z-10">
+                  ★ Mysuru's #1 Bestseller
+                </span>
               </div>
             </div>
 
-            {/* Price Row & Action */}
-            <div className="flex items-center gap-6 pt-4 border-t border-[#F2ECE5] flex-wrap">
-              <div>
-                <span className="text-[10px] text-muted block uppercase font-semibold">Special Selling Price</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-charcoal">₹{starProduct.defaultPrice}</span>
-                  {starProduct.defaultOriginalPrice && (
-                    <span className="text-sm text-muted line-through">₹{starProduct.defaultOriginalPrice}</span>
-                  )}
-                  {starProduct.defaultDiscount && (
-                    <span className="bg-[#E8F7EE] text-[#137333] text-xs font-bold px-2 py-0.5 rounded">
-                      {starProduct.defaultDiscount}% OFF
+            {/* Right Column: Active Ingredients & Direct Buy (translateZ: 25px) */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left" style={{ transform: 'translateZ(25px)' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-[11px] font-bold text-burgundy uppercase tracking-wider bg-burgundy/5 px-2.5 py-1 rounded-md">
+                  {starProduct.brand}
+                </span>
+                <span className="text-xs font-semibold text-muted">
+                  {starProduct.category}
+                </span>
+              </div>
+
+              <h3 className="font-editorial text-2xl sm:text-3xl lg:text-4xl font-bold text-charcoal">
+                {starProduct.name}
+              </h3>
+
+              <p className="text-xs sm:text-sm text-charcoal/80 leading-relaxed max-w-xl">
+                {starProduct.description}
+              </p>
+
+              {/* Active Ingredients Tags */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-mono uppercase font-bold text-muted tracking-wider block">
+                  Active Formulation Profile:
+                </span>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {[
+                    '3 Essential Ceramides (1, 3, 6-II)',
+                    'Pure Hyaluronic Acid Deep Moisture',
+                    'MVE 24-Hour Controlled Release',
+                    'Non-Comedogenic & Fragrance Free'
+                  ].map((ing, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#FAF5F2] border border-[#EAE0D7] text-[10px] sm:text-[11px] font-medium text-charcoal shadow-2xs"
+                    >
+                      <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span>{ing}</span>
                     </span>
-                  )}
+                  ))}
                 </div>
               </div>
 
-              {/* Quantity Stepper */}
-              <div className="flex items-center border border-[#EAE0D6] rounded-full px-2 py-1 bg-white">
-                <button
-                  type="button"
-                  onClick={() => setSpotlightQuantity(Math.max(1, spotlightQuantity - 1))}
-                  className="w-7 h-7 flex items-center justify-center text-charcoal hover:text-burgundy font-bold text-sm cursor-pointer"
-                >
-                  -
-                </button>
-                <span className="w-8 text-center text-xs font-bold text-charcoal">
-                  {spotlightQuantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSpotlightQuantity(spotlightQuantity + 1)}
-                  className="w-7 h-7 flex items-center justify-center text-charcoal hover:text-burgundy font-bold text-sm cursor-pointer"
-                >
-                  +
-                </button>
+              {/* Price Row & Action */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#F2ECE5] w-full">
+                <div className="flex items-center justify-between sm:justify-start gap-4">
+                  <div>
+                    <span className="text-[10px] text-muted block uppercase font-semibold">Special Selling Price</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl sm:text-2xl font-bold text-charcoal">₹{starProduct.defaultPrice}</span>
+                      {starProduct.defaultOriginalPrice && (
+                        <span className="text-xs sm:text-sm text-muted line-through">₹{starProduct.defaultOriginalPrice}</span>
+                      )}
+                      {starProduct.defaultDiscount && (
+                        <span className="bg-[#E8F7EE] text-[#137333] text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded">
+                          {starProduct.defaultDiscount}% OFF
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quantity Stepper (enforcing minimum 1 and stock ceiling) */}
+                  <div className="flex items-center border border-[#EAE0D6] rounded-full px-2 py-1 bg-white shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setSpotlightQuantity(prev => Math.max(1, prev - 1))}
+                      disabled={spotlightQuantity <= 1}
+                      aria-label="Decrease quantity"
+                      className="w-7 h-7 flex items-center justify-center text-charcoal hover:text-burgundy font-bold text-sm cursor-pointer disabled:opacity-40"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 text-center text-xs font-bold text-charcoal">
+                      {spotlightQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const primaryVariant = starProduct.variants?.[0];
+                        const maxStock = primaryVariant?.stockQuantity ?? 10;
+                        setSpotlightQuantity(prev => Math.min(maxStock, prev + 1));
+                      }}
+                      aria-label="Increase quantity"
+                      className="w-7 h-7 flex items-center justify-center text-charcoal hover:text-burgundy font-bold text-sm cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto sm:ml-auto">
+                  <button
+                    onClick={() => {
+                      if (!starProduct) return;
+                      const primaryVariant = starProduct.variants?.[0] || {
+                        id: `${starProduct.id}-default`,
+                        variantName: 'Standard',
+                        price: starProduct.defaultPrice || 399,
+                        sku: starProduct.id,
+                        stockQuantity: 15
+                      };
+                      const availableStock = primaryVariant.stockQuantity ?? 15;
+                      if (availableStock <= 0) {
+                        alert('This formula is currently out of stock.');
+                        return;
+                      }
+                      const qtyToAdd = Math.min(Math.max(1, spotlightQuantity), availableStock);
+                      const res = addToCart(starProduct, primaryVariant, qtyToAdd);
+                      if (res.success) {
+                        setSpotlightAdded(true);
+                        setTimeout(() => setSpotlightAdded(false), 2000);
+                      } else {
+                        alert(res.message || 'Failed to add item to bag');
+                      }
+                    }}
+                    className={`px-6 sm:px-8 py-3 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                      spotlightAdded
+                        ? 'bg-emerald-700 text-white'
+                        : 'bg-burgundy hover:bg-burgundy-dark text-white'
+                    }`}
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>{spotlightAdded ? 'Added to Bag!' : 'Add to Bag'}</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate(`/product/${starProduct.slug}`)}
+                    className="px-5 py-3 rounded-full bg-white hover:bg-[#FAF7F4] text-charcoal border border-[#EAE0D6] text-xs font-bold transition-colors cursor-pointer text-center"
+                  >
+                    View Full Specs
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    const res = addToCart(starProduct, starProduct.variants[0], spotlightQuantity);
-                    if (res.success) {
-                      setSpotlightAdded(true);
-                      setTimeout(() => setSpotlightAdded(false), 2000);
-                    }
-                  }}
-                  className={`px-8 py-3 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 ${
-                    spotlightAdded
-                      ? 'bg-emerald-700 text-white'
-                      : 'bg-burgundy hover:bg-burgundy-dark text-white'
-                  }`}
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>{spotlightAdded ? 'Added to Bag!' : 'Add to Bag'}</span>
-                </button>
-                <button
-                  onClick={() => onNavigate(`/product/${starProduct.slug}`)}
-                  className="px-5 py-3 rounded-full bg-white hover:bg-[#FAF7F4] text-charcoal border border-[#EAE0D6] text-xs font-bold transition-colors cursor-pointer"
-                >
-                  View Full Specs
-                </button>
-              </div>
             </div>
 
           </div>
-
-        </div>
+        )}
       </section>
 
 

@@ -43,6 +43,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   const [announcementIndex, setAnnouncementIndex] = useState(0);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
   const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Rotating promotional announcements
@@ -62,7 +63,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   // Click outside to close search suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const inDesktop = searchContainerRef.current?.contains(target);
+      const inMobile = mobileSearchContainerRef.current?.contains(target);
+      if (!inDesktop && !inMobile) {
         setIsSearchFocused(false);
       }
     };
@@ -204,59 +208,152 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
     }
   };
 
+  const renderSearchDropdown = () => (
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-elevated border border-border p-4 z-50 animate-fade-in divide-y divide-border/60">
+      {/* Matched Products */}
+      {searchResults.length > 0 ? (
+        <div className="pb-3">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-rose" />
+            <span>Products Found ({searchResults.length})</span>
+          </div>
+          <div className="space-y-1.5">
+            {searchResults.map((prod) => (
+              <div
+                key={prod.id}
+                onClick={() => handleSearchSelect(`/product/${prod.slug}`)}
+                className="flex items-center gap-3 p-2 rounded-md hover:bg-warmcream/80 cursor-pointer transition-colors group"
+              >
+                <img
+                  src={prod.images[0]}
+                  alt={prod.name}
+                  className="w-10 h-10 object-contain rounded bg-[#FAF7F4] p-1 border border-border/80"
+                />
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-muted block truncate">
+                    {prod.brand}
+                  </span>
+                  <h4 className="text-xs font-semibold text-charcoal truncate group-hover:text-rose transition-colors">
+                    {prod.name}
+                  </h4>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-xs font-bold text-charcoal">₹{prod.defaultPrice}</span>
+                  {prod.defaultOriginalPrice && prod.defaultOriginalPrice > prod.defaultPrice && (
+                    <span className="text-[10px] text-muted line-through block">₹{prod.defaultOriginalPrice}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : searchQuery.trim() ? (
+        <div className="py-2 text-center text-xs text-muted">
+          No products matching "{searchQuery}". Press Enter to search catalog.
+        </div>
+      ) : null}
+
+      {/* Popular Search Suggestions */}
+      <div className="pt-3">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1">
+          <Flame className="w-3 h-3 text-coral" />
+          <span>Popular Searches</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            'Niacinamide Serum', 
+            'SPF 50 Sunscreen', 
+            'Glaze Lip Oil', 
+            'Cloud Ceramide Cream', 
+            'Seamless Liquid Blush', 
+            'Rosemary Scalp Oil', 
+            'Santorini Perfume'
+          ].map(term => (
+            <button
+              key={term}
+              onClick={() => handleSearchSelect(`/search?q=${encodeURIComponent(term)}`)}
+              className="px-2.5 py-1 rounded-full text-xs bg-warmcream hover:bg-blush hover:text-rose text-charcoal border border-border/60 transition-colors"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {searchQuery.trim() && (
+        <div className="pt-2 text-right">
+          <button
+            onClick={handleSearchSubmit}
+            className="text-xs font-bold text-rose hover:text-berry flex items-center gap-1 ml-auto"
+          >
+            <span>View all results for "{searchQuery}"</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-border shadow-subtle transition-colors">
       
       {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP (MATCHING REFERENCE IMAGE) */}
       <div className="bg-burgundy text-white py-1.5 px-4 text-center overflow-hidden transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 sm:gap-8 text-[11px] sm:text-xs font-medium tracking-wide">
-          <div className="flex items-center gap-1.5">
-            <span>🚚</span>
-            <span>Free delivery in Gokulam, Mysuru</span>
+        <div className="max-w-7xl mx-auto flex items-center justify-center text-[10px] sm:text-xs font-medium tracking-wide">
+          {/* Mobile Single Announcement */}
+          <div className="sm:hidden flex items-center justify-center gap-1.5 truncate max-w-full">
+            <span>{announcements[announcementIndex].text}</span>
           </div>
-          <span className="opacity-40">•</span>
-          <div className="flex items-center gap-1.5">
-            <span>🛡️</span>
-            <span>Authentic Products</span>
-          </div>
-          <span className="opacity-40">•</span>
-          <div className="flex items-center gap-1.5">
-            <span>⚡</span>
-            <span>Fast & Reliable Delivery</span>
+          {/* Tablet & Desktop Full Strip */}
+          <div className="hidden sm:flex items-center justify-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-1.5">
+              <span>🚚</span>
+              <span>Free delivery in Gokulam, Mysuru</span>
+            </div>
+            <span className="opacity-40">•</span>
+            <div className="flex items-center gap-1.5">
+              <span>🛡️</span>
+              <span>Authentic Products</span>
+            </div>
+            <span className="opacity-40">•</span>
+            <div className="flex items-center gap-1.5">
+              <span>⚡</span>
+              <span>Fast & Reliable Delivery</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 2. MAIN HEADER ROW */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18 sm:h-20 gap-3 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-6">
           
           {/* Logo with Botanical Flower Icon */}
-          <div className="flex items-center gap-4 lg:gap-6 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 shrink-0">
             <button
               onClick={() => onNavigate('/')}
-              className="text-left flex items-center gap-2 group py-1"
+              className="text-left flex items-center gap-1.5 sm:gap-2 group py-1"
             >
-              <div className="w-8 h-8 rounded-full bg-burgundy/5 flex items-center justify-center text-burgundy group-hover:scale-105 transition-transform">
-                <svg className="w-5 h-5 fill-burgundy" viewBox="0 0 24 24">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-burgundy/5 flex items-center justify-center text-burgundy group-hover:scale-105 transition-transform shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-burgundy" viewBox="0 0 24 24">
                   <path d="M12 2C13.5 5 15.5 6.5 18.5 8C15.5 9.5 13.5 11 12 14C10.5 11 8.5 9.5 5.5 8C8.5 6.5 10.5 5 12 2Z" />
                   <circle cx="12" cy="18" r="2" />
                   <path d="M7 16C8 14 10 13.5 12 14C14 13.5 16 14 17 16C15 17 14 18.5 12 18.5C10 18.5 9 17 7 16Z" opacity="0.6" />
                 </svg>
               </div>
               <div className="flex flex-col">
-                <span className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-charcoal group-hover:text-burgundy transition-colors leading-none">
+                <span className="font-editorial text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-charcoal group-hover:text-burgundy transition-colors leading-none">
                   Dew & Go
                 </span>
-                <span className="text-[8px] sm:text-[9px] tracking-[0.25em] text-burgundy/80 uppercase font-semibold mt-0.5">
+                <span className="text-[7.5px] sm:text-[8.5px] tracking-[0.2em] sm:tracking-[0.25em] text-burgundy/80 uppercase font-semibold mt-0.5">
                   BEAUTY • CARE • YOU
                 </span>
               </div>
             </button>
           </div>
 
-          {/* 3. SEARCH BAR + HYPERLOCAL LOCATION PILL */}
-          <div className="flex-1 max-w-2xl flex items-center gap-2.5">
+          {/* 3. SEARCH BAR + HYPERLOCAL LOCATION PILL (DESKTOP) */}
+          <div className="hidden md:flex flex-1 max-w-2xl items-center gap-2.5">
             <div ref={searchContainerRef} className="flex-1 relative">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
@@ -279,98 +376,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
                 )}
               </form>
 
-            {/* LIVE SEARCH AUTOCOMPLETE POPUP */}
-            {isSearchFocused && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-elevated border border-border p-4 z-50 animate-fade-in divide-y divide-border/60">
-                {/* Matched Products */}
-                {searchResults.length > 0 ? (
-                  <div className="pb-3">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-rose" />
-                      <span>Products Found ({searchResults.length})</span>
-                    </div>
-                    <div className="space-y-1.5">
-                      {searchResults.map((prod) => (
-                        <div
-                          key={prod.id}
-                          onClick={() => handleSearchSelect(`/product/${prod.slug}`)}
-                          className="flex items-center gap-3 p-2 rounded-md hover:bg-warmcream/80 cursor-pointer transition-colors group"
-                        >
-                          <img
-                            src={prod.images[0]}
-                            alt={prod.name}
-                            className="w-10 h-10 object-contain rounded bg-[#FAF7F4] p-1 border border-border/80"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[10px] uppercase font-bold text-muted block truncate">
-                              {prod.brand}
-                            </span>
-                            <h4 className="text-xs font-semibold text-charcoal truncate group-hover:text-rose transition-colors">
-                              {prod.name}
-                            </h4>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="text-xs font-bold text-charcoal">₹{prod.defaultPrice}</span>
-                            {prod.defaultOriginalPrice && prod.defaultOriginalPrice > prod.defaultPrice && (
-                              <span className="text-[10px] text-muted line-through block">₹{prod.defaultOriginalPrice}</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : searchQuery.trim() ? (
-                  <div className="py-2 text-center text-xs text-muted">
-                    No products matching "{searchQuery}". Press Enter to search catalog.
-                  </div>
-                ) : null}
-
-                {/* Popular Search Suggestions */}
-                <div className="pt-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-muted mb-2 flex items-center gap-1">
-                    <Flame className="w-3 h-3 text-coral" />
-                    <span>Popular Searches</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      'Niacinamide Serum', 
-                      'SPF 50 Sunscreen', 
-                      'Glaze Lip Oil', 
-                      'Cloud Ceramide Cream', 
-                      'Seamless Liquid Blush', 
-                      'Rosemary Scalp Oil', 
-                      'Santorini Perfume'
-                    ].map(term => (
-                      <button
-                        key={term}
-                        onClick={() => handleSearchSelect(`/search?q=${encodeURIComponent(term)}`)}
-                        className="px-2.5 py-1 rounded-full text-xs bg-warmcream hover:bg-blush hover:text-rose text-charcoal border border-border/60 transition-colors"
-                      >
-                        {term}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {searchQuery.trim() && (
-                  <div className="pt-2 text-right">
-                    <button
-                      onClick={handleSearchSubmit}
-                      className="text-xs font-bold text-rose hover:text-berry flex items-center gap-1 ml-auto"
-                    >
-                      <span>View all results for "{searchQuery}"</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+              {/* LIVE SEARCH AUTOCOMPLETE POPUP (DESKTOP) */}
+              {isSearchFocused && renderSearchDropdown()}
             </div>
 
             {/* Hyperlocal Delivery Location Selector Pill */}
             <button
               onClick={openLocationModal}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full border border-[#EFE7E1] bg-white hover:border-burgundy/40 hover:bg-[#FAF8F6] text-left transition-all duration-150 shadow-sm shrink-0"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full border border-[#EFE7E1] bg-white hover:border-burgundy/40 hover:bg-[#FAF8F6] text-left transition-all duration-150 shadow-sm shrink-0 cursor-pointer"
               title="Change Delivery Location"
             >
               <MapPin className="w-3.5 h-3.5 text-burgundy shrink-0" />
@@ -381,8 +394,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             </button>
           </div>
 
-          {/* 4. USER ACTIONS (ACCOUNT, WISHLIST, BAG) */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* 4. USER ACTIONS (ACCOUNT, WISHLIST, BAG, MOBILE MENU) */}
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             
             {/* Account Menu */}
             <div className="relative">
@@ -512,6 +525,35 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+          </div>
+        </div>
+
+        {/* MOBILE DEDICATED FULL-WIDTH SEARCH BAR */}
+        <div className="md:hidden pb-2.5 pt-0.5">
+          <div ref={mobileSearchContainerRef} className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                placeholder="Search skincare, makeup, haircare..."
+                className="w-full pl-9 pr-8 py-2 rounded-full border border-[#EFE7E1] bg-[#FAF8F6] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-burgundy transition-all shadow-inner"
+              />
+              <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </form>
+
+            {/* Mobile Search Dropdown */}
+            {isSearchFocused && renderSearchDropdown()}
           </div>
         </div>
 
