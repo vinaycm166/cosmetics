@@ -24,6 +24,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
+import { ProductImage } from '../components/common/ProductImage';
 import { store } from '../lib/store';
 import { useLocation } from '../context/LocationContext';
 import { useCart } from '../context/CartContext';
@@ -40,10 +41,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { addToCart } = useCart();
   const allProducts = store.getPublishedProducts();
   const scrollY = useScrollParallax();
+  const [heroImgSrc, setHeroImgSrc] = useState<string>('https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=2000&q=90');
 
   // 3D Tilt for Spotlight Card
   const { ref: spotlightRef, style: spotlightTiltStyle } = useTilt<HTMLDivElement>({
-    max: 10,
+    max: 12,
     scale: 1.02,
     perspective: 1200
   });
@@ -123,7 +125,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   // Crown Star Product for 3D Dimensional Spotlight
   const starProduct = allProducts.find(p => p.id === 'prod-cerave-hydrating') || allProducts[0];
 
-  // Large Image-Led Editorial Category Gallery (Replacing empty circles)
+  // Large Image-Led Editorial Category Gallery
   const editorialDepartments = [
     {
       code: '01',
@@ -175,219 +177,198 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     },
   ];
 
-  // The 4-Step Dewy Routine products (Cleanse -> Treat -> Moisturize -> Shield)
-  const routineSteps = [
-    {
-      step: '01',
-      phase: 'Cleanse',
-      title: 'Hydrating Ceramide Cleanser',
-      brand: 'CeraVe',
-      desc: 'Restores the delicate barrier with 3 essential ceramides while washing away urban dust.',
-      price: '₹899',
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
-      product: allProducts.find(p => p.id === 'prod-cerave-hydrating') || allProducts[0],
-      benefits: ['Gentle Non-Foaming', 'Hyaluronic Hydration', 'Preserves Lipids']
-    },
-    {
-      step: '02',
-      phase: 'Treat',
-      title: 'Niacinamide 10% + Zinc 1%',
-      brand: 'Minimalist',
-      desc: 'Targeted serum to fade post-acne blemishes, tighten pores, and regulate excess sebum.',
-      price: '₹549',
-      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
-      product: allProducts.find(p => p.id === 'prod-minimalist-nia') || allProducts[1],
-      benefits: ['Balances Oil', 'Fades Dark Spots', 'Soothes Redness']
-    },
-    {
-      step: '03',
-      phase: 'Nourish',
-      title: 'Revitalift Hyaluronic Plump Cream',
-      brand: "L'Oréal Paris",
-      desc: 'Concentrated micro-hyaluronic day gel-cream that locks moisture for 24-hour velvet bounce.',
-      price: '₹799',
-      image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=80',
-      product: allProducts.find(p => p.id === 'prod-loreal-revitalift') || allProducts[2],
-      benefits: ['Micro-HA Plumping', 'Glass Skin Radiance', 'Non-Greasy Base']
-    },
-    {
-      step: '04',
-      phase: 'Shield',
-      title: 'Invisible Water Gel Sunscreen SPF 50+',
-      brand: 'Sol Shield Lab',
-      desc: 'Ultralight broad-spectrum PA++++ protection with 0% white cast, perfected for Karnataka heat.',
-      price: '₹499',
-      image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80',
-      product: allProducts.find(p => p.id === 'prod-003') || allProducts[3],
-      benefits: ['Zero White Cast', 'Photostable Tinosorb', 'Sweat Resistant']
-    }
-  ];
-
-  const handleAddRoutineProduct = (prod: Product, stepName: string) => {
-    if (!prod) return;
-    const res = addToCart(prod, prod.variants[0], 1);
-    if (res.success) {
-      setRoutineAddedNotification(`Added ${prod.name} (${stepName}) to your bag!`);
-      setTimeout(() => setRoutineAddedNotification(null), 2500);
-    }
-  };
-
   return (
     <div className="space-y-20 sm:space-y-32 pb-32 overflow-x-hidden bg-[#FCFAF8] text-charcoal">
       
       {/* ========================================================
           SCENE 1: CINEMATIC BEAUTY CAMPAIGN HERO
-          (Dominant Campaign Photography Occupying 60-65% + Layered Editorial Typography)
+          (Dominant Full-Bleed 62% Campaign Visual + Layered Typography)
       ======================================================== */}
-      <section className="relative min-h-[92vh] lg:min-h-[95vh] flex items-center overflow-hidden bg-gradient-to-b from-[#FDF9F6] via-[#FAF3ED] to-[#F7ECE4] border-b border-[#EAE0D6]">
+      <section className="relative w-full min-h-[92vh] lg:min-h-[95vh] flex items-center overflow-hidden bg-[#FAF5F0] border-b border-[#EAE0D6]">
         
-        {/* Parallax Background Aura Layer */}
-        <div 
-          className="absolute inset-0 pointer-events-none overflow-hidden"
-          style={{ transform: `translate3d(0, ${scrollY * 0.15}px, 0)` }}
-        >
-          <div className="absolute top-10 left-1/3 w-[850px] h-[550px] bg-gradient-to-tr from-rose-200/40 via-peach-100/35 to-burgundy/10 rounded-full blur-3xl opacity-75" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-rose-300/20 rounded-full blur-2xl" />
-        </div>
+        {/* DOMINANT FULL-HEIGHT BEAUTY CAMPAIGN PHOTOGRAPH (OCCUPIES 62% ON DESKTOP) */}
+        <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[62%] h-full overflow-hidden select-none z-0 bg-gradient-to-br from-[#F7ECE4] via-[#F3E5DB] to-[#EDE0D4]">
+          <div 
+            className="w-full h-full relative"
+            style={{
+              transform: `translate3d(0, ${scrollY * 0.08}px, 0) scale(${1 + scrollY * 0.00015})`,
+              willChange: 'transform'
+            }}
+          >
+            {/* High-Resolution Luxury Beauty Campaign Visual with Multi-Layer Reliability */}
+            <img
+              src={heroImgSrc}
+              alt="Dew & Go Curated Cosmetics - Estée Lauder, Laneige, CeraVe"
+              fetchPriority="high"
+              decoding="async"
+              loading="eager"
+              onError={() => {
+                if (heroImgSrc !== 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=2000&q=90') {
+                  setHeroImgSrc('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=2000&q=90');
+                }
+              }}
+              className="w-full h-full object-cover object-[center_35%] lg:object-center filter brightness-[1.02] contrast-[1.03] transition-opacity duration-500"
+            />
 
-        {/* Huge Watermark Brand Contour in Background */}
-        <div className="absolute -left-10 top-1/2 -translate-y-1/2 text-[14vw] font-editorial font-bold text-burgundy/[0.03] select-none pointer-events-none whitespace-nowrap z-0">
-          DEW & GO MYSURU
-        </div>
-
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 lg:py-16 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[70vh]">
+            {/* Seamless Left Edge Gradient Fade into Typography */}
+            <div className="absolute inset-y-0 left-0 w-40 sm:w-72 bg-gradient-to-r from-[#FAF5F0] via-[#FAF5F0]/85 to-transparent pointer-events-none hidden lg:block" />
             
-            {/* Left: Oversized Editorial Typography (approx. 45% width, gracefully overlapping the image) */}
-            <div className="lg:col-span-5 space-y-6 text-left relative z-20">
-              
-              {/* Campaign Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#EBDCD3] shadow-xs backdrop-blur-xs">
-                <span className="w-2 h-2 rounded-full bg-burgundy animate-ping" />
-                <span className="text-[11px] font-bold tracking-[0.2em] text-burgundy uppercase">
-                  GOKULAM, MYSURU • SPRING 2026 EDIT
-                </span>
-              </div>
+            {/* Top & Bottom Cinematic Edge Vignettes */}
+            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF5F0] via-[#FAF5F0]/60 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-black/10 lg:bg-transparent pointer-events-none" />
+          </div>
 
-              {/* Monumental Editorial Headline */}
-              <h1 className="font-editorial text-5xl sm:text-7xl lg:text-8xl font-bold text-charcoal leading-[0.96] tracking-tight">
-                Pure Actives.<br />
-                <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-burgundy via-[#8B263E] to-[#E76F51]">
-                  Unfiltered
-                </span><br />
-                Glow.
-              </h1>
-              
-              <p className="text-sm sm:text-base text-charcoal/80 max-w-md font-sans leading-relaxed">
-                Dermatologist-formulated skincare, clean makeup & luxury fragrance curated for Karnataka's climate. Cold-stored at 18–22°C in Gokulam and hand-delivered in 30–45 minutes.
-              </p>
+          {/* Floating Highlight Badge 1: Gokulam Express Drop */}
+          <div className="absolute top-8 right-8 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#EFE7E1] shadow-card hidden sm:flex items-center gap-3 z-10 max-w-[230px] animate-fade-in">
+            <div className="w-10 h-10 rounded-full bg-burgundy/10 flex items-center justify-center text-burgundy shrink-0">
+              <Bike className="w-5 h-5 text-burgundy" />
+            </div>
+            <div className="text-left">
+              <span className="text-[11px] font-bold text-charcoal block leading-tight">
+                Gokulam Express
+              </span>
+              <span className="text-[10px] text-muted block mt-0.5">
+                30–45 Mins Hyperlocal Drop
+              </span>
+            </div>
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  onClick={() => onNavigate('/shop')}
-                  className="px-8 py-4 rounded-full bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md hover:shadow-xl hover:scale-102 flex items-center gap-3 cursor-pointer group active:scale-95"
-                >
-                  <span>Shop The Collection</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
-                </button>
-                <button
-                  onClick={() => {
-                    const el = document.getElementById('scene-crown-spotlight');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-6 py-4 rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-charcoal border border-[#E2D5CC] text-xs font-bold tracking-wider uppercase transition-all shadow-xs hover:border-burgundy/40 cursor-pointer"
-                >
-                  Explore Crown Formula ↓
-                </button>
-              </div>
+          {/* Floating Highlight Badge 2: 18-22°C Climate Stored */}
+          <div className="absolute bottom-16 right-8 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#EFE7E1] shadow-card hidden md:flex items-center gap-3 z-10 max-w-[250px] animate-fade-in">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div className="text-left">
+              <span className="text-[11px] font-bold text-charcoal block leading-tight">
+                18–22°C Cold Stored
+              </span>
+              <span className="text-[10px] text-muted block mt-0.5">
+                Protects Active Retinol & Peptides
+              </span>
+            </div>
+          </div>
+        </div>
 
-              {/* Verified Shopper Proof */}
-              <div className="flex items-center gap-3 pt-3">
-                <div className="flex -space-x-2 overflow-hidden">
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                    alt="Customer"
-                  />
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80"
-                    alt="Customer"
-                  />
-                  <img
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                    alt="Customer"
-                  />
-                </div>
-                <div className="text-xs">
-                  <div className="flex items-center gap-1 text-amber-500 font-bold">
-                    <span>★★★★★</span>
-                    <span className="text-charcoal text-[11px] font-semibold">4.9 / 5.0</span>
-                  </div>
-                  <span className="text-[10px] text-muted">2,400+ Verified Gokulam & Mysuru Orders</span>
-                </div>
-              </div>
-
+        {/* OVERLAPPING EDITORIAL TYPOGRAPHY & INTERFACE (LEFT 45-50%) */}
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative z-20">
+          <div className="max-w-2xl space-y-6 text-left">
+            
+            {/* Campaign Eyebrow Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EBDCD3] shadow-xs backdrop-blur-xs">
+              <span className="w-2 h-2 rounded-full bg-burgundy animate-ping" />
+              <span className="text-[11px] font-bold tracking-[0.2em] text-burgundy uppercase font-mono">
+                GOKULAM, MYSURU • SPRING 2026 EDIT
+              </span>
             </div>
 
-            {/* Right: Dominant Campaign Photograph (approx. 55-70% visual composition) */}
-            <div className="lg:col-span-7 relative flex items-center justify-center">
-              
-              {/* Outer Decorative Gradient Glow */}
-              <div className="absolute -inset-2 bg-gradient-to-tr from-rose-200/50 via-peach-100/40 to-burgundy/15 rounded-3xl filter blur-xl opacity-80" />
-              
-              {/* Main Photographic Canvas */}
-              <div 
-                className="relative w-full aspect-[4/3] sm:aspect-[16/11] lg:aspect-[16/11] rounded-3xl overflow-hidden bg-gradient-to-br from-[#FFF5F2] to-[#FBECE6] border border-[#F0E4DC] shadow-2xl group"
-                style={{ transform: `scale(${1 + scrollY * 0.00015})` }}
+            {/* Monumental Editorial Headline */}
+            <h1 className="font-editorial text-5xl sm:text-7xl lg:text-8xl xl:text-8.5xl font-bold text-charcoal leading-[0.94] tracking-tight drop-shadow-xs">
+              GLOW <br />
+              <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-burgundy via-[#8B263E] to-[#E76F51]">
+                CONFIDENTLY,
+              </span><br />
+              EVERY DAY.
+            </h1>
+            
+            <p className="text-sm sm:text-base lg:text-lg text-charcoal/85 max-w-md font-sans leading-relaxed">
+              Dermatologist-formulated barrier care, dewy clean makeup & luxury fragrance. Stored at 18–22°C in Gokulam and hand-delivered in 30–45 minutes.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button
+                onClick={() => onNavigate('/shop')}
+                className="px-8 py-4 rounded-full bg-burgundy hover:bg-burgundy-dark text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md hover:shadow-2xl hover:scale-102 flex items-center gap-3 cursor-pointer group active:scale-95"
               >
-                
-                {/* Genuine High-Resolution Cosmetic Still Life Photography */}
-                <img
-                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1600&q=90"
-                  alt="Dew & Go Curated Cosmetics - Estée Lauder, Laneige, CeraVe"
-                  className="w-full h-full object-cover object-center group-hover:scale-104 transition-transform duration-1000 ease-out"
-                />
-
-                {/* Subtle Cinematic Vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
-
-                {/* Floating Highlight Card 1: Gokulam Express */}
-                <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#EFE7E1] shadow-card flex items-center gap-3 animate-fade-in max-w-[220px]">
-                  <div className="w-10 h-10 rounded-full bg-burgundy/10 flex items-center justify-center text-burgundy shrink-0">
-                    <Bike className="w-5 h-5 text-burgundy" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-charcoal block leading-tight">
-                      Gokulam Express
-                    </span>
-                    <span className="text-[10px] text-muted block mt-0.5">
-                      30–45 Mins Hyperlocal Drop
-                    </span>
-                  </div>
-                </div>
-
-                {/* Floating Highlight Card 2: 18-22°C Cold Storage */}
-                <div className="absolute bottom-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#EFE7E1] shadow-card flex items-center gap-3 animate-fade-in max-w-[240px]">
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                    <Clock className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-charcoal block leading-tight">
-                      18–22°C Climate Stored
-                    </span>
-                    <span className="text-[10px] text-muted block mt-0.5">
-                      Protects Active Peptides & Serums
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-
+                <span>Shop The Collection</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('scene-crown-spotlight');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-6 py-4 rounded-full bg-white/95 backdrop-blur-md hover:bg-white text-charcoal border border-[#E2D5CC] text-xs font-bold tracking-wider uppercase transition-all shadow-xs hover:border-burgundy/40 cursor-pointer"
+              >
+                Discover Crown Formula ↓
+              </button>
             </div>
 
+            {/* Verified Shopper Proof */}
+            <div className="flex items-center gap-3 pt-3">
+              <div className="flex -space-x-2 overflow-hidden">
+                {[
+                  { name: 'Pooja R.', initials: 'PR', bg: 'bg-[#982245]', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80' },
+                  { name: 'Ananya N.', initials: 'AN', bg: 'bg-[#E76F51]', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80' },
+                  { name: 'Dr. Shruti K.', initials: 'SK', bg: 'bg-[#2A9D8F]', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80' }
+                ].map((shopper, i) => (
+                  <div key={i} className="relative inline-block h-8 w-8 rounded-full ring-2 ring-white overflow-hidden shadow-2xs">
+                    <div className={`w-full h-full ${shopper.bg} text-white flex items-center justify-center text-[10px] font-bold select-none`}>
+                      {shopper.initials}
+                    </div>
+                    <img
+                      className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
+                      src={shopper.img}
+                      alt={shopper.name}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs">
+                <div className="flex items-center gap-1 text-amber-500 font-bold">
+                  <span>★★★★★</span>
+                  <span className="text-charcoal text-[11px] font-semibold">4.9 / 5.0</span>
+                </div>
+                <span className="text-[10px] text-muted">2,400+ Verified Gokulam & Mysuru Orders</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 4 Bottom Trust Seals Bar */}
+        <div className="absolute inset-x-0 bottom-0 bg-[#FAF5F0]/90 backdrop-blur-md border-t border-[#EAE0D6]/80 py-3 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <Zap className="w-3.5 h-3.5 text-burgundy" />
+              </div>
+              <div className="leading-tight">
+                <span className="font-bold text-charcoal text-[11px] block">30–45 Mins</span>
+                <span className="text-[10px] text-muted">Gokulam Express Drop</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-burgundy" />
+              </div>
+              <div className="leading-tight">
+                <span className="font-bold text-charcoal text-[11px] block">100% Authentic</span>
+                <span className="text-[10px] text-muted">Direct Lab Sourcing</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <RotateCcw className="w-3.5 h-3.5 text-burgundy" />
+              </div>
+              <div className="leading-tight">
+                <span className="font-bold text-charcoal text-[11px] block">7-Day Return</span>
+                <span className="text-[10px] text-muted">Doorstep Rider Pickup</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-white border border-[#EBE1D8] flex items-center justify-center text-burgundy shadow-2xs shrink-0">
+                <CreditCard className="w-3.5 h-3.5 text-burgundy" />
+              </div>
+              <div className="leading-tight">
+                <span className="font-bold text-charcoal text-[11px] block">UPI & COD</span>
+                <span className="text-[10px] text-muted">Razorpay Protected</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -455,7 +436,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
       {/* ========================================================
           SCENE 3: 3D DIMENSIONAL FEATURED COSMETICS SHOWCASE
-          (The Crown Formula with Real 3D Cursor Tilt & Active Ingredient Callouts)
+          (The Crown Formula with True 3D Cursor Tilt & Depth Layering)
       ======================================================== */}
       <section id="scene-crown-spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-10 space-y-1.5">
@@ -473,25 +454,33 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         {/* 3D Tilt Stage Container */}
         <div 
           ref={spotlightRef}
-          style={spotlightTiltStyle}
+          style={{
+            ...spotlightTiltStyle,
+            transformStyle: 'preserve-3d'
+          }}
           className="relative rounded-3xl bg-white border border-[#EAE0D6] p-6 sm:p-10 lg:p-12 shadow-card grid grid-cols-1 lg:grid-cols-12 gap-8 items-center cursor-default transition-shadow duration-300 hover:shadow-2xl"
         >
-          {/* Left Column: Product Image in 3D Perspective */}
-          <div className="lg:col-span-5 flex items-center justify-center relative">
-            <div className="relative w-72 h-72 sm:w-84 sm:h-84 rounded-2xl bg-gradient-to-b from-[#FBF6F2] to-[#F5ECE5] border border-[#EAE0D6] p-6 flex items-center justify-center shadow-inner overflow-hidden">
-              <img
+          {/* Left Column: Product Image with 3D Depth Layering (translateZ: 50px) */}
+          <div className="lg:col-span-5 flex items-center justify-center relative" style={{ transformStyle: 'preserve-3d' }}>
+            <div 
+              style={{ transform: 'translateZ(50px)' }}
+              className="relative w-72 h-72 sm:w-84 sm:h-84 rounded-2xl bg-gradient-to-b from-[#FBF6F2] to-[#F5ECE5] border border-[#EAE0D6] p-6 flex items-center justify-center shadow-inner overflow-hidden"
+            >
+              <ProductImage
                 src={starProduct.images[0]}
                 alt={starProduct.name}
+                brand={starProduct.brand}
+                category={starProduct.category}
                 className="w-full h-full object-contain filter drop-shadow-2xl hover:scale-106 transition-transform duration-500"
               />
-              <span className="absolute top-4 left-4 bg-[#FEF3EB] text-[#C25E1A] px-2.5 py-1 rounded text-[10px] font-bold tracking-wide shadow-2xs">
+              <span className="absolute top-4 left-4 bg-[#FEF3EB] text-[#C25E1A] px-2.5 py-1 rounded text-[10px] font-bold tracking-wide shadow-2xs z-10">
                 ★ Mysuru's #1 Bestseller
               </span>
             </div>
           </div>
 
-          {/* Right Column: Active Ingredients & Direct Buy */}
-          <div className="lg:col-span-7 space-y-5 text-left">
+          {/* Right Column: Active Ingredients & Direct Buy (translateZ: 25px) */}
+          <div className="lg:col-span-7 space-y-5 text-left" style={{ transform: 'translateZ(25px)' }}>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-burgundy uppercase tracking-wider bg-burgundy/5 px-2.5 py-1 rounded-md">
                 {starProduct.brand}
@@ -523,7 +512,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 ].map((ing, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5F2] border border-[#EAE0D7] text-[11px] font-medium text-charcoal"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5F2] border border-[#EAE0D7] text-[11px] font-medium text-charcoal shadow-2xs"
                   >
                     <Check className="w-3 h-3 text-emerald-600" />
                     <span>{ing}</span>
@@ -605,7 +594,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
       {/* ========================================================
           SCENE 4: IMAGE-LED BEAUTY CATEGORIES GALLERY
-          (Replacing small circles with rich, editorial department panels)
+          (Large, Architectural Editorial Department Cards)
       ======================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-3 border-b border-[#F0EAE8] gap-2 text-left">
@@ -634,14 +623,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               onClick={() => onNavigate(dept.route)}
               className="group relative rounded-3xl overflow-hidden bg-white border border-[#EAE0D6] shadow-subtle hover:shadow-card cursor-pointer transition-all duration-300 flex flex-col justify-between h-84"
             >
-              {/* High-Resolution Background Photography */}
-              <div className="absolute inset-0 z-0 overflow-hidden">
+              {/* High-Resolution Background Photography with Editorial Fallback */}
+              <div className="absolute inset-0 z-0 overflow-hidden bg-gradient-to-br from-[#68192E] via-[#4A1221] to-[#2E0B14]">
                 <img
                   src={dept.image}
                   alt={dept.name}
-                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                  loading="eager"
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-black/10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-black/20" />
               </div>
 
               {/* Department Index Tag */}
