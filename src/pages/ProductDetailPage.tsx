@@ -18,6 +18,7 @@ import {
   Award
 } from 'lucide-react';
 import { store } from '../lib/store';
+import { usePublishedProducts } from '../lib/useStore';
 import { ProductVariant } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -95,7 +96,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, onNa
     onNavigate('/checkout');
   };
 
-  const relatedProducts = store.getPublishedProducts().filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+  const publishedProducts = usePublishedProducts();
+  const relatedProducts = publishedProducts.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">

@@ -1256,42 +1256,66 @@ export const BulkImportView: React.FC<BulkImportViewProps> = ({ onImportComplete
             </p>
           </div>
 
-          {/* Summary Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+          {/* Summary Metric Cards (6 Database-Verified Metrics) */}
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
                 Created
               </span>
               <span className="text-2xl font-extrabold text-emerald-700">
                 {importSummary.createdCount}
               </span>
+              <span className="text-[9px] text-emerald-600 block mt-0.5">New Records</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-center">
+            <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 block">
                 Updated
               </span>
               <span className="text-2xl font-extrabold text-blue-700">
                 {importSummary.updatedCount}
               </span>
+              <span className="text-[9px] text-blue-600 block mt-0.5">Existing Records</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-warmcream border border-border text-center">
+            <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-800 block">
+                Published Live
+              </span>
+              <span className="text-2xl font-extrabold text-purple-700">
+                {importSummary.publishedCount ?? 0}
+              </span>
+              <span className="text-[9px] text-purple-600 block mt-0.5">In Customer Shop</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">
+                Drafts
+              </span>
+              <span className="text-2xl font-extrabold text-amber-700">
+                {importSummary.draftCount ?? 0}
+              </span>
+              <span className="text-[9px] text-amber-600 block mt-0.5">Awaiting Review</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-warmcream border border-border text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
                 Skipped
               </span>
               <span className="text-2xl font-extrabold text-charcoal">
                 {importSummary.skippedCount}
               </span>
+              <span className="text-[9px] text-muted block mt-0.5">Duplicates</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-rose/10 border border-rose/30 text-center">
+            <div className="p-3.5 rounded-xl bg-rose/10 border border-rose/30 text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-rose block">
                 Failed
               </span>
               <span className="text-2xl font-extrabold text-rose">
                 {importSummary.failedCount}
               </span>
+              <span className="text-[9px] text-rose block mt-0.5">Validation Errors</span>
             </div>
           </div>
 

@@ -26,6 +26,7 @@ import {
 import { ProductCard } from '../components/common/ProductCard';
 import { ProductImage } from '../components/common/ProductImage';
 import { store } from '../lib/store';
+import { usePublishedProducts } from '../lib/useStore';
 import { useLocation } from '../context/LocationContext';
 import { useCart } from '../context/CartContext';
 import { Product } from '../types';
@@ -39,7 +40,7 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { selectedArea, selectedPinCode, isServiceable, estimatedDeliveryMinutes, openLocationModal } = useLocation();
   const { addToCart } = useCart();
-  const allProducts = store.getPublishedProducts();
+  const allProducts = usePublishedProducts();
   const scrollY = useScrollParallax();
   const [heroImgSrc, setHeroImgSrc] = useState<string>('https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=2000&q=90');
 

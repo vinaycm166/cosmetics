@@ -240,6 +240,20 @@ export const parseUploadedFile = async (
 };
 
 /**
+ * Validates whether an SKU is a non-empty, non-generic identifier.
+ * Prevents empty strings or generic placeholders from accidentally matching products.
+ */
+export const isValidSku = (sku?: string | null): boolean => {
+  if (!sku) return false;
+  const trimmed = String(sku).trim();
+  if (trimmed === '' || trimmed.length < 2) return false;
+  const lower = trimmed.toLowerCase();
+  const invalidPlaceholders = ['sku', 'n/a', 'na', 'null', 'undefined', 'none', '-', '--', 'placeholder', 'empty', '0', '0000'];
+  if (invalidPlaceholders.includes(lower)) return false;
+  return true;
+};
+
+/**
  * Automatically inspects uploaded column headers and generates smart mapping suggestions
  */
 export const detectColumnMapping = (headers: string[]): ColumnMapping => {
@@ -378,11 +392,15 @@ export const validateAndParseRows = (
     }
 
     // 3. SKU validation
-    let sku = mapping.sku ? String(row[mapping.sku] || '').trim() : '';
-    if (!sku) {
-      // Deterministic fallback SKU
-      sku = `DWG-${brand.substring(0, 3).toUpperCase()}-${Date.now().toString(36)}-${index + 1}`.replace(/\s+/g, '');
-      warnings.push(`Missing SKU; auto-generated: ${sku}`);
+    let rawSku = mapping.sku ? String(row[mapping.sku] || '').trim() : '';
+    let sku = rawSku;
+    if (!sku || !isValidSku(sku)) {
+      // Deterministic guaranteed unique SKU per product row
+      const brandPrefix = (brand || 'DWG').substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+      const namePart = (productName || 'PRD').substring(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+      const rowIdStr = String(index + 1).padStart(4, '0');
+      sku = `DWG-${brandPrefix}-${namePart}-${rowIdStr}`;
+      warnings.push(`Missing or generic SKU; assigned unique persistent SKU: ${sku}`);
     } else {
       if (seenSkusInFile.has(sku.toLowerCase())) {
         errors.push(`Duplicate SKU "${sku}" found multiple times in spreadsheet.`);
@@ -544,13 +562,12 @@ export const executeBatchImport = async (
   let updatedCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
+  let actualDraftCount = 0;
+  let actualPublishedCount = 0;
   const errors: { row: number; sku: string; name: string; error: string }[] = [];
 
   const BATCH_SIZE = 25;
   const totalBatches = Math.max(1, Math.ceil(validRows.length / BATCH_SIZE));
-
-  const existingProducts = store.getProducts();
-  const existingCategories = store.getCategories();
   const processedSkus = new Set<string>();
 
   for (let b = 0; b < totalBatches; b++) {
@@ -558,23 +575,41 @@ export const executeBatchImport = async (
 
     for (const item of batch) {
       try {
-        // Prevent duplicate creation within same import session
-        if (processedSkus.has(item.sku.toLowerCase())) {
-          skippedCount++;
-          continue;
-        }
-        processedSkus.add(item.sku.toLowerCase());
+        const cleanSku = item.sku?.trim();
 
-        // Find if SKU exists
+        // Prevent duplicate SKU creation within same import session
+        if (cleanSku && isValidSku(cleanSku)) {
+          const lowerSku = cleanSku.toLowerCase();
+          if (processedSkus.has(lowerSku)) {
+            skippedCount++;
+            continue;
+          }
+          processedSkus.add(lowerSku);
+        }
+
+        // Query the live store state for exact matching
+        const currentProducts = store.getProducts();
         let existingProd: Product | undefined = undefined;
         let existingVariant: ProductVariant | undefined = undefined;
 
-        for (const p of existingProducts) {
-          const v = p.variants.find(vr => vr.sku.toLowerCase() === item.sku.toLowerCase());
-          if (v) {
-            existingProd = p;
-            existingVariant = v;
-            break;
+        // Strict matching: Only match if cleanSku is a verified valid identifier.
+        // Never match every row to the same product because of a missing or invalid identifier!
+        if (cleanSku && isValidSku(cleanSku)) {
+          const lowerSku = cleanSku.toLowerCase();
+          for (const p of currentProducts) {
+            // 1. Check variant SKU
+            const v = p.variants.find(vr => vr.sku && isValidSku(vr.sku) && vr.sku.trim().toLowerCase() === lowerSku);
+            if (v) {
+              existingProd = p;
+              existingVariant = v;
+              break;
+            }
+            // 2. Check direct stable product ID
+            if (p.id && p.id.toLowerCase() === lowerSku) {
+              existingProd = p;
+              existingVariant = p.variants[0];
+              break;
+            }
           }
         }
 
@@ -585,7 +620,8 @@ export const executeBatchImport = async (
         }
 
         // Category resolve or create
-        let categoryObj = existingCategories.find(
+        const currentCategories = store.getCategories();
+        let categoryObj = currentCategories.find(
           c => c.name.toLowerCase() === item.category.toLowerCase() || c.slug.toLowerCase() === item.category.toLowerCase()
         );
         if (!categoryObj) {
@@ -595,7 +631,7 @@ export const executeBatchImport = async (
             slug: item.category.toLowerCase().replace(/[^a-z0-9]/g, '-'),
             description: `Curated ${item.category} essentials.`,
             imageUrl: item.imageUrl || PLACEHOLDER_COSMETIC_IMAGE,
-            displayOrder: existingCategories.length + 1,
+            displayOrder: currentCategories.length + 1,
             isActive: true,
             productCount: 1
           };
@@ -607,10 +643,15 @@ export const executeBatchImport = async (
         const isProductComplete = Boolean(item.productName && item.sellingPrice && item.sellingPrice > 0);
         const shouldPublish = options.publishPolicy === 'published' && isProductComplete;
 
+        if (shouldPublish) {
+          actualPublishedCount++;
+        } else {
+          actualDraftCount++;
+        }
+
         if (existingProd && existingVariant) {
           // UPDATE EXISTING PRODUCT
           if (options.mode === 'full') {
-            // Update details and stock
             const prevStock = existingVariant.stockQuantity;
             const newStock = item.stock;
 
@@ -621,7 +662,6 @@ export const executeBatchImport = async (
             existingVariant.variantName = item.variantName;
             if (item.barcode) existingVariant.barcode = item.barcode;
 
-            // Log inventory adjustment
             if (newStock !== prevStock) {
               store.adjustInventory(
                 existingVariant.id,
@@ -631,7 +671,6 @@ export const executeBatchImport = async (
               );
             }
           } else if (options.mode === 'catalogue_only') {
-            // Update details only, preserve stock!
             if (item.sellingPrice !== null) existingVariant.price = item.sellingPrice;
             if (item.mrp !== null && item.mrp !== undefined) existingVariant.originalPrice = item.mrp;
             existingVariant.discountPercentage = item.discountPercentage;
@@ -639,7 +678,7 @@ export const executeBatchImport = async (
             if (item.barcode) existingVariant.barcode = item.barcode;
           }
 
-          // Update parent product
+          // Update parent product in database
           store.updateProduct(existingProd.id, {
             name: item.productName,
             brand: item.brand,
@@ -652,7 +691,7 @@ export const executeBatchImport = async (
             defaultOriginalPrice: existingVariant.originalPrice,
             defaultDiscount: existingVariant.discountPercentage,
             status: shouldPublish ? 'published' : 'draft',
-            isPublished: shouldPublish ? true : existingProd.isPublished
+            isPublished: shouldPublish ? true : false
           });
 
           updatedCount++;
@@ -672,7 +711,7 @@ export const executeBatchImport = async (
             barcode: item.barcode,
             price: effectivePrice,
             originalPrice: item.mrp ?? undefined,
-            stockQuantity: 0, // Initialized to 0; adjustInventory below sets exact imported stock and records audit log
+            stockQuantity: 0,
             reservedQuantity: 0,
             isDefault: true,
             isActive: shouldPublish
@@ -711,7 +750,6 @@ export const executeBatchImport = async (
 
           store.addProduct(newProduct);
 
-          // Log initial stock creation if non-zero
           if (item.stock > 0) {
             store.adjustInventory(
               newVariantId,
@@ -754,6 +792,9 @@ export const executeBatchImport = async (
     await new Promise(resolve => setTimeout(resolve, 30));
   }
 
+  // Refresh category counts after catalogue import
+  store.syncCategoryCounts();
+
   // Record Import Job in Store for auditing
   const importJob: ImportJob = {
     id: `job_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -789,14 +830,14 @@ export const executeBatchImport = async (
 
   return {
     totalRows: rows.length,
-    totalProcessed: rows.length,
+    totalProcessed: validRows.length,
     selectedRows: validRows.length,
     createdCount,
     updatedCount,
     skippedCount,
     failedCount,
-    draftCount: options.publishPolicy === 'draft' ? createdCount : 0,
-    publishedCount: options.publishPolicy === 'published' ? createdCount : 0,
+    draftCount: actualDraftCount,
+    publishedCount: actualPublishedCount,
     errors,
     durationMs: Date.now() - startTime
   };

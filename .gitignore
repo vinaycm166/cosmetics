@@ -38,3 +38,4 @@ Thumbs.db
 # Testing & local scratch
 coverage
 .system_generated
+scratch/

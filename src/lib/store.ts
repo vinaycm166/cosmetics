@@ -100,6 +100,21 @@ const safeStorage = {
   }
 };
 
+// Publication eligibility validators
+export const isEligibleForPublish = (p: Product): boolean => {
+  const hasName = Boolean(p.name && p.name.trim().length > 0);
+  const hasPrice = Boolean(p.defaultPrice && p.defaultPrice > 0);
+  const hasImage = Boolean(p.images && p.images[0] && p.images[0].trim().length > 0);
+  return hasName && hasPrice && hasImage;
+};
+
+export const getUnpublishedReason = (p: Product): string => {
+  if (!p.name || p.name.trim().length === 0) return 'Missing Name';
+  if (!p.defaultPrice || p.defaultPrice <= 0) return 'Missing Selling Price (₹0)';
+  if (!p.images || !p.images[0] || p.images[0].trim().length === 0) return 'Missing Valid Photo';
+  return 'Ready to Publish';
+};
+
 class Store {
   private products: Product[] = [];
   private categories: Category[] = [];
@@ -169,7 +184,19 @@ class Store {
   }
 
   private notify() {
-    this.listeners.forEach(cb => cb());
+    this.listeners.forEach(cb => {
+      try {
+        cb();
+      } catch (err) {
+        console.error('Store listener error:', err);
+      }
+    });
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('dew_and_go_catalogue_updated'));
+      } catch {}
+    }
   }
 
   // --- PRODUCTS ---
@@ -181,7 +208,12 @@ class Store {
    * Only returns active, published products that are not drafts and have a positive valid price
    */
   public getPublishedProducts(): Product[] {
-    return this.products.filter(p => p.isPublished && p.status !== 'draft' && p.defaultPrice > 0);
+    return this.products.filter(p => {
+      const isPub = Boolean(p.isPublished || p.status === 'published');
+      const isNotDraft = p.status !== 'draft' && p.status !== 'archived';
+      const hasValidPrice = typeof p.defaultPrice === 'number' && p.defaultPrice > 0;
+      return isPub && isNotDraft && hasValidPrice;
+    });
   }
 
   public getProductBySlug(slug: string): Product | undefined {
@@ -199,10 +231,13 @@ class Store {
       product.status = 'draft';
     } else if (!product.status) {
       product.status = product.isPublished ? 'published' : 'draft';
+    } else if (product.status === 'published') {
+      product.isPublished = true;
     }
 
     this.products.unshift(product);
     safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+    this.syncCategoryCounts();
     this.notify();
   }
 
@@ -210,15 +245,111 @@ class Store {
     this.products = this.products.map(p => {
       if (p.id !== id) return p;
       const merged = { ...p, ...updates, updatedAt: new Date().toISOString() };
-      // Prevent incomplete products from being published
-      if ((merged.isPublished || merged.status === 'published') && (!merged.defaultPrice || merged.defaultPrice <= 0 || !merged.name)) {
+      
+      // Reconcile isPublished and status
+      if (updates.isPublished === true || updates.status === 'published') {
+        if (!merged.defaultPrice || merged.defaultPrice <= 0 || !merged.name) {
+          merged.isPublished = false;
+          merged.status = 'draft';
+        } else {
+          merged.isPublished = true;
+          merged.status = 'published';
+          if (merged.variants) {
+            merged.variants = merged.variants.map(v => ({ ...v, isActive: true }));
+          }
+        }
+      } else if (updates.isPublished === false || updates.status === 'draft') {
         merged.isPublished = false;
         merged.status = 'draft';
+        if (merged.variants) {
+          merged.variants = merged.variants.map(v => ({ ...v, isActive: false }));
+        }
       }
+
       return merged;
     });
     safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+    this.syncCategoryCounts();
     this.notify();
+  }
+
+
+  public publishProduct(id: string): { success: boolean; error?: string } {
+    const product = this.getProductById(id);
+    if (!product) return { success: false, error: 'Product not found.' };
+    if (!product.defaultPrice || product.defaultPrice <= 0) {
+      return { success: false, error: 'Cannot publish product: Valid selling price greater than ₹0 is required.' };
+    }
+    if (!product.name || product.name.trim().length === 0) {
+      return { success: false, error: 'Cannot publish product: Product name is required.' };
+    }
+
+    this.updateProduct(id, {
+      isPublished: true,
+      status: 'published'
+    });
+    return { success: true };
+  }
+
+  public unpublishProduct(id: string): { success: boolean; error?: string } {
+    const product = this.getProductById(id);
+    if (!product) return { success: false, error: 'Product not found.' };
+
+    this.updateProduct(id, {
+      isPublished: false,
+      status: 'draft'
+    });
+    return { success: true };
+  }
+
+  public bulkPublishEligible(): { publishedCount: number; remainingDrafts: number } {
+    let count = 0;
+    this.products = this.products.map(p => {
+      const isDraft = p.status === 'draft' || !p.isPublished;
+      const isEligible = Boolean(
+        p.name && 
+        p.name.trim().length > 0 && 
+        p.defaultPrice && 
+        p.defaultPrice > 0 && 
+        p.images && 
+        p.images[0] && 
+        p.images[0].trim().length > 0
+      );
+
+      if (isDraft && isEligible) {
+        count++;
+        return {
+          ...p,
+          isPublished: true,
+          status: 'published',
+          variants: p.variants.map(v => ({ ...v, isActive: true })),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return p;
+    });
+
+    if (count > 0) {
+      safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+      this.syncCategoryCounts();
+      this.notify();
+    }
+
+    const remainingDrafts = this.products.filter(p => p.status === 'draft' || !p.isPublished).length;
+    return { publishedCount: count, remainingDrafts };
+  }
+
+  public syncCategoryCounts(): void {
+    const published = this.getPublishedProducts();
+    this.categories = this.categories.map(cat => {
+      const count = published.filter(p => 
+        (p.categoryId && p.categoryId.toLowerCase() === cat.id.toLowerCase()) || 
+        (p.category && p.category.toLowerCase() === cat.name.toLowerCase()) ||
+        (p.category && p.category.toLowerCase() === cat.slug.toLowerCase())
+      ).length;
+      return { ...cat, productCount: count };
+    });
+    safeStorage.setItem(KEYS.CATEGORIES, JSON.stringify(this.categories));
   }
 
   public deleteProduct(id: string): void {

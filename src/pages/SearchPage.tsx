@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Sparkles, X, ArrowRight } from 'lucide-react';
-import { store } from '../lib/store';
+import { usePublishedProducts } from '../lib/useStore';
 import { ProductCard } from '../components/common/ProductCard';
 
 interface SearchPageProps {
@@ -10,7 +10,7 @@ interface SearchPageProps {
 
 export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNavigate }) => {
   const [query, setQuery] = useState(initialQuery);
-  const allProducts = store.getPublishedProducts();
+  const allProducts = usePublishedProducts();
 
   const searchResults = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -22,7 +22,9 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
       const matchCategory = p.category.toLowerCase().includes(q);
       const matchConcern = p.skinConcern?.some(c => c.toLowerCase().includes(q));
       const matchIngredients = p.ingredients?.toLowerCase().includes(q);
-      return matchName || matchBrand || matchCategory || matchConcern || matchIngredients;
+      const matchDesc = p.description?.toLowerCase().includes(q);
+      const matchSku = p.variants?.some(v => v.sku?.toLowerCase().includes(q) || (v as any).barcode?.toLowerCase().includes(q));
+      return matchName || matchBrand || matchCategory || matchConcern || matchIngredients || matchDesc || matchSku;
     });
   }, [query, allProducts]);
 

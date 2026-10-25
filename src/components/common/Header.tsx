@@ -21,6 +21,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { store } from '../../lib/store';
+import { usePublishedProducts } from '../../lib/useStore';
 import { Product } from '../../types';
 
 interface HeaderProps {
@@ -70,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   }, []);
 
   // Filter products for live search autocomplete
-  const allProducts = store.getPublishedProducts();
+  const allProducts = usePublishedProducts();
   const searchResults: Product[] = searchQuery.trim()
     ? allProducts.filter(p => 
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -30,7 +30,8 @@ import {
   UploadCloud,
   X
 } from 'lucide-react';
-import { store, StoreSettings, InventoryLog } from '../lib/store';
+import { store, StoreSettings, InventoryLog, isEligibleForPublish, getUnpublishedReason } from '../lib/store';
+import { useAllProducts, useCategories } from '../lib/useStore';
 import { useAuth } from '../context/AuthContext';
 import { Order, OrderStatus, Product, Coupon } from '../types';
 import { BulkImportView } from '../components/admin/BulkImportView';
@@ -60,8 +61,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   const analytics = store.getAnalytics();
-  const allProducts = store.getProducts();
-  const allCategories = store.getCategories();
+  const allProducts = useAllProducts();
+  const allCategories = useCategories();
   const allOrders = store.getOrders();
   const coupons = store.getCoupons();
   const inventoryLogs = store.getInventoryLogs();
@@ -71,6 +72,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const totalProductsCount = allProducts.length;
   const publishedProductsCount = useMemo(() => allProducts.filter(p => p.isPublished && p.status !== 'draft').length, [allProducts]);
   const draftProductsCount = useMemo(() => allProducts.filter(p => p.status === 'draft' || !p.isPublished).length, [allProducts]);
+  const eligibleDraftsCount = useMemo(() => allProducts.filter(p => (p.status === 'draft' || !p.isPublished) && isEligibleForPublish(p)).length, [allProducts]);
+  const incompleteDraftsCount = draftProductsCount - eligibleDraftsCount;
   const validImagesCount = useMemo(() => allProducts.filter(p => p.images[0] && isValidImageUrl(p.images[0])).length, [allProducts]);
   const missingImagesCount = totalProductsCount - validImagesCount;
   const lowStockProductsCount = useMemo(() => allProducts.filter(p => p.variants.reduce((s, v) => s + v.stockQuantity, 0) < 10).length, [allProducts]);
@@ -121,7 +124,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   // Product Search, Status Filter & Modal State
   const [productSearchQuery, setProductSearchQuery] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
-  const [productStatusFilter, setProductStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [productStatusFilter, setProductStatusFilter] = useState<'all' | 'published' | 'draft' | 'draft_eligible' | 'draft_incomplete'>('all');
   const [productImageFilter, setProductImageFilter] = useState<'all' | 'verified' | 'missing'>('all');
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -213,11 +216,38 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     });
   }, [allOrders, orderStatusFilter, orderSearchQuery]);
 
+  // Product Direct Publishing Action Handlers
+  const handlePublishProduct = (id: string) => {
+    const res = store.publishProduct(id);
+    if (!res.success) {
+      alert(res.error || 'Failed to publish product');
+    }
+  };
+
+  const handleUnpublishProduct = (id: string) => {
+    store.unpublishProduct(id);
+  };
+
+  const handleBulkPublishEligible = () => {
+    if (eligibleDraftsCount === 0) {
+      alert('No eligible draft products found to publish. Incomplete products without positive selling prices or valid photos remain safely in draft.');
+      return;
+    }
+    if (confirm(`Publish all ${eligibleDraftsCount} eligible draft products to the live customer storefront? Products missing selling prices or photos will remain safely in draft.`)) {
+      const res = store.bulkPublishEligible();
+      alert(`Success! Published ${res.publishedCount} verified products to the customer storefront. ${res.remainingDrafts} incomplete products remain safely in draft.`);
+    }
+  };
+
   // Filtered Products
   const filteredProducts = useMemo(() => {
     return allProducts.filter(p => {
-      if (productStatusFilter === 'published' && (p.status === 'draft' || !p.isPublished)) return false;
-      if (productStatusFilter === 'draft' && p.status !== 'draft' && p.isPublished) return false;
+      const isDraft = p.status === 'draft' || !p.isPublished;
+      if (productStatusFilter === 'published' && isDraft) return false;
+      if (productStatusFilter === 'draft' && !isDraft) return false;
+      if (productStatusFilter === 'draft_eligible' && (!isDraft || !isEligibleForPublish(p))) return false;
+      if (productStatusFilter === 'draft_incomplete' && (!isDraft || isEligibleForPublish(p))) return false;
+
       if (productCategoryFilter !== 'all' && p.category.toLowerCase() !== productCategoryFilter.toLowerCase()) return false;
       if (productImageFilter === 'verified' && (!p.images[0] || !isValidImageUrl(p.images[0]))) return false;
       if (productImageFilter === 'missing' && p.images[0] && isValidImageUrl(p.images[0])) return false;
@@ -869,6 +899,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       <FileSpreadsheet className="w-3.5 h-3.5" />
                       <span>Bulk Import Excel</span>
                     </button>
+                    {eligibleDraftsCount > 0 && (
+                      <button
+                        onClick={handleBulkPublishEligible}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white !py-1.5 !px-3 text-xs font-bold flex items-center gap-1.5 shrink-0 rounded shadow-sm transition-all animate-pulse"
+                        title="Publish all draft products that satisfy pricing and photographic integrity"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Publish All Eligible ({eligibleDraftsCount})</span>
+                      </button>
+                    )}
                     <input
                       type="text"
                       value={productSearchQuery}
@@ -882,8 +922,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       className="px-3 py-1.5 text-xs rounded-md border border-neutral-border bg-white font-medium"
                     >
                       <option value="all">All Statuses ({allProducts.length})</option>
-                      <option value="published">Published ({publishedProductsCount})</option>
-                      <option value="draft">Drafts ({draftProductsCount})</option>
+                      <option value="published">Published Live ({publishedProductsCount})</option>
+                      <option value="draft">All Drafts ({draftProductsCount})</option>
+                      <option value="draft_eligible">Drafts: Ready to Publish ({eligibleDraftsCount})</option>
+                      <option value="draft_incomplete">Drafts: Incomplete ({incompleteDraftsCount})</option>
                     </select>
                     <select
                       value={productImageFilter}
@@ -932,6 +974,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         filteredProducts.map(p => {
                           const totalStock = p.variants.reduce((sum, v) => sum + (v.stockQuantity ?? 0), 0);
                           const isDraft = p.status === 'draft' || !p.isPublished;
+                          const isEligible = isEligibleForPublish(p);
+                          const unpublishReason = getUnpublishedReason(p);
                           const primarySku = p.variants[0]?.sku || '—';
                           const primaryBarcode = (p.variants[0] as any)?.barcode || '—';
                           const hasPhoto = isValidImageUrl(p.images[0]);
@@ -974,12 +1018,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                               <td className="p-3 text-charcoal-900">{p.category}</td>
                               <td className="p-3">
                                 {isDraft ? (
-                                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                    Draft
-                                  </span>
+                                  <div>
+                                    {isEligible ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+                                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                        <span>Draft (Ready)</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-300" title={unpublishReason}>
+                                        <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                                        <span>Draft ({unpublishReason})</span>
+                                      </span>
+                                    )}
+                                  </div>
                                 ) : (
-                                  <span className="text-[10px] font-bold text-mint-600 bg-mint-50 px-2 py-0.5 rounded border border-mint-200">
-                                    Published
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-mint-600 bg-mint-50 px-2 py-0.5 rounded border border-mint-200">
+                                    <CheckCircle2 className="w-2.5 h-2.5 text-mint-600" />
+                                    <span>Published</span>
                                   </span>
                                 )}
                               </td>
@@ -1007,6 +1062,25 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                               </td>
                               <td className="p-3 text-right">
                                 <div className="flex items-center justify-end gap-2">
+                                  {isDraft && isEligible && (
+                                    <button
+                                      onClick={() => handlePublishProduct(p.id)}
+                                      className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1 shadow-xs"
+                                      title="Publish product to customer catalogue immediately"
+                                    >
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                      <span>Publish</span>
+                                    </button>
+                                  )}
+                                  {!isDraft && (
+                                    <button
+                                      onClick={() => handleUnpublishProduct(p.id)}
+                                      className="text-xs font-semibold text-charcoal-600 hover:text-amber-700 hover:underline"
+                                      title="Revert back to draft"
+                                    >
+                                      Unpublish
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => handleOpenEditProduct(p)}
                                     className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline flex items-center gap-0.5"

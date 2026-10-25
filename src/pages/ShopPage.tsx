@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Filter, SlidersHorizontal, ArrowUpDown, X, Check, Search, Sparkles, LayoutGrid, Grid3X3 } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
-import { store } from '../lib/store';
+import { usePublishedProducts, useCategories } from '../lib/useStore';
 
 interface ShopPageProps {
   onNavigate: (route: string) => void;
@@ -9,13 +9,19 @@ interface ShopPageProps {
 }
 
 export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory }) => {
-  const allProducts = store.getPublishedProducts();
-  const categories = store.getCategories();
+  const allProducts = usePublishedProducts();
+  const categories = useCategories();
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [selectedSkinConcern, setSelectedSkinConcern] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('bestseller');
+  
+  const maxPriceLimit = useMemo(() => {
+    const prices = allProducts.map(p => p.defaultPrice || 0);
+    return Math.max(3000, ...prices);
+  }, [allProducts]);
+
   const [maxPrice, setMaxPrice] = useState<number>(3000);
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
@@ -23,7 +29,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
 
   // Extract unique brands and concerns
   const availableBrands = useMemo(() => {
-    return Array.from(new Set(allProducts.map(p => p.brand)));
+    return Array.from(new Set(allProducts.map(p => p.brand).filter(Boolean)));
   }, [allProducts]);
 
   const availableConcerns = useMemo(() => {
@@ -37,17 +43,21 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     return allProducts.filter(p => {
-      // Category filter
+      // Category filter (case-insensitive and ID-aware)
       if (selectedCategory !== 'all') {
-        const cat = categories.find(c => c.slug === selectedCategory);
-        if (cat && p.category !== cat.name && p.categoryId !== cat.id) return false;
+        const cat = categories.find(c => c.slug.toLowerCase() === selectedCategory.toLowerCase());
+        const catName = cat?.name?.toLowerCase();
+        const pCat = p.category?.toLowerCase();
+        const pCatId = p.categoryId?.toLowerCase();
+        const matches = (catName && pCat === catName) || (cat && pCatId === cat.id.toLowerCase()) || pCat === selectedCategory.toLowerCase();
+        if (!matches) return false;
       }
 
       // Brand filter
-      if (selectedBrand !== 'all' && p.brand !== selectedBrand) return false;
+      if (selectedBrand !== 'all' && p.brand.toLowerCase() !== selectedBrand.toLowerCase()) return false;
 
       // Concern filter
-      if (selectedSkinConcern !== 'all' && !p.skinConcern?.includes(selectedSkinConcern)) return false;
+      if (selectedSkinConcern !== 'all' && !p.skinConcern?.some(c => c.toLowerCase() === selectedSkinConcern.toLowerCase())) return false;
 
       // Price filter
       if (p.defaultPrice > maxPrice) return false;
@@ -58,7 +68,8 @@ export const ShopPage: React.FC<ShopPageProps> = ({ onNavigate, initialCategory 
         if (defaultVar && defaultVar.stockQuantity <= defaultVar.reservedQuantity) return false;
       }
 
-      return p.isPublished;
+      // Live publication requirement
+      return Boolean(p.isPublished || p.status === 'published') && p.status !== 'draft' && p.defaultPrice > 0;
     }).sort((a, b) => {
       if (sortBy === 'price-asc') return a.defaultPrice - b.defaultPrice;
       if (sortBy === 'price-desc') return b.defaultPrice - a.defaultPrice;

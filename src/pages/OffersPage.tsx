@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Tag, Copy, Check, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { store } from '../lib/store';
+import { usePublishedProducts } from '../lib/useStore';
 import { ProductCard } from '../components/common/ProductCard';
 
 interface OffersPageProps {
@@ -9,7 +10,7 @@ interface OffersPageProps {
 
 export const OffersPage: React.FC<OffersPageProps> = ({ onNavigate }) => {
   const coupons = store.getCoupons();
-  const allProducts = store.getPublishedProducts();
+  const allProducts = usePublishedProducts();
   const discountedProducts = allProducts.filter(p => (p.defaultDiscount || 0) >= 10);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 

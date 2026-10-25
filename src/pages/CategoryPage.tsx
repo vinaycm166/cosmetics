@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
-import { store } from '../lib/store';
+import { usePublishedProducts, useCategories } from '../lib/useStore';
 import { ProductCard } from '../components/common/ProductCard';
 
 interface CategoryPageProps {
@@ -9,8 +9,9 @@ interface CategoryPageProps {
 }
 
 export const CategoryPage: React.FC<CategoryPageProps> = ({ slug, onNavigate }) => {
-  const category = store.getCategoryBySlug(slug);
-  const allProducts = store.getPublishedProducts();
+  const categories = useCategories();
+  const category = categories.find(c => c.slug.toLowerCase() === slug.toLowerCase() || c.id.toLowerCase() === slug.toLowerCase());
+  const allProducts = usePublishedProducts();
 
   if (!category) {
     return (
@@ -24,9 +25,17 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({ slug, onNavigate }) 
     );
   }
 
-  const categoryProducts = allProducts.filter(
-    p => p.category.toLowerCase() === category.name.toLowerCase() || p.categoryId === category.id
-  );
+  const categoryProducts = allProducts.filter(p => {
+    const pCat = p.category?.toLowerCase();
+    const pCatId = p.categoryId?.toLowerCase();
+    const matches = (
+      pCat === category.name.toLowerCase() || 
+      pCat === category.slug.toLowerCase() || 
+      pCatId === category.id.toLowerCase()
+    );
+    const isLive = Boolean(p.isPublished || p.status === 'published') && p.status !== 'draft' && p.defaultPrice > 0;
+    return matches && isLive;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
