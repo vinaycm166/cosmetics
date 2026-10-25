@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ArrowRight, 
   ShieldCheck, 
@@ -42,6 +42,34 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const allProducts = store.getPublishedProducts();
   const scrollY = useScrollParallax();
   const [heroImgSrc, setHeroImgSrc] = useState<string>('https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=2000&q=90');
+
+  // Video Ref & Playback state for Google Flow Hero Video
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState<boolean>(false);
+  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setIsReducedMotion(mediaQuery.matches);
+
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      setIsReducedMotion(e.matches);
+      if (e.matches && videoRef.current) {
+        videoRef.current.pause();
+      } else if (!e.matches && videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleMotionChange);
+    return () => mediaQuery.removeEventListener('change', handleMotionChange);
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && !isReducedMotion) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isReducedMotion]);
 
   // 3D Tilt for Spotlight Card
   const { ref: spotlightRef, style: spotlightTiltStyle } = useTilt<HTMLDivElement>({
@@ -195,27 +223,39 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               willChange: 'transform'
             }}
           >
-            {/* High-Resolution Luxury Beauty Campaign Visual with Multi-Layer Reliability */}
-            <img
-              src={heroImgSrc}
-              alt="Dew & Go Curated Cosmetics - Estée Lauder, Laneige, CeraVe"
-              fetchPriority="high"
-              decoding="async"
-              loading="eager"
-              onError={() => {
-                if (heroImgSrc !== 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=2000&q=90') {
-                  setHeroImgSrc('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=2000&q=90');
-                }
-              }}
-              className="w-full h-full object-cover object-[center_35%] lg:object-center filter brightness-[1.02] contrast-[1.03] transition-opacity duration-500"
-            />
+            {/* Cinematic Google Flow Studio Video */}
+            <video
+              ref={videoRef}
+              src="/videos/Skincare_products_in_beauty_studio_20261025182559.mp4"
+              poster={heroImgSrc}
+              autoPlay={!isReducedMotion}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              onLoadedData={() => setIsVideoLoaded(true)}
+              className={`w-full h-full object-cover object-[center_35%] lg:object-center filter brightness-[1.02] contrast-[1.03] transition-opacity duration-700 ${
+                isVideoLoaded ? 'opacity-100' : 'opacity-90'
+              }`}
+            >
+              <source src="/videos/Skincare_products_in_beauty_studio_20261025182559.mp4" type="video/mp4" />
+              {/* Fallback image if video is not supported */}
+              <img
+                src={heroImgSrc}
+                alt="Dew & Go Curated Cosmetics - Skincare Products in Beauty Studio"
+                className="w-full h-full object-cover"
+              />
+            </video>
 
-            {/* Seamless Left Edge Gradient Fade into Typography */}
+            {/* Seamless Left Edge Gradient Fade into Typography on Desktop */}
             <div className="absolute inset-y-0 left-0 w-40 sm:w-72 bg-gradient-to-r from-[#FAF5F0] via-[#FAF5F0]/85 to-transparent pointer-events-none hidden lg:block" />
             
+            {/* Soft Ivory/Blush Readability Overlay on Mobile so typography and buttons pop */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#FAF5F0]/88 via-[#FAF5F0]/75 to-[#FAF5F0]/55 lg:hidden pointer-events-none" />
+
             {/* Top & Bottom Cinematic Edge Vignettes */}
             <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF5F0] via-[#FAF5F0]/60 to-transparent pointer-events-none" />
-            <div className="absolute inset-0 bg-black/10 lg:bg-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-black/5 lg:bg-transparent pointer-events-none" />
           </div>
 
           {/* Floating Highlight Badge 1: Gokulam Express Drop */}
@@ -263,11 +303,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
             {/* Monumental Editorial Headline */}
             <h1 className="font-editorial text-5xl sm:text-7xl lg:text-8xl xl:text-8.5xl font-bold text-charcoal leading-[0.94] tracking-tight drop-shadow-xs">
-              GLOW <br />
+              PURE ACTIVES. <br />
               <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-burgundy via-[#8B263E] to-[#E76F51]">
-                CONFIDENTLY,
+                UNFILTERED
               </span><br />
-              EVERY DAY.
+              GLOW.
             </h1>
             
             <p className="text-sm sm:text-base lg:text-lg text-charcoal/85 max-w-md font-sans leading-relaxed">
