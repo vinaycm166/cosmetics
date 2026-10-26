@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as XLSX from 'xlsx';
 import path from 'path';
 import { 
@@ -7,10 +7,18 @@ import {
   executeBatchImport 
 } from '../lib/bulkImportService';
 import { store, isEligibleForPublish, getUnpublishedReason } from '../lib/store';
-import { INITIAL_CATEGORIES } from '../data/seedData';
+import { INITIAL_CATEGORIES, BASE_INITIAL_PRODUCTS, INITIAL_PRODUCTS } from '../data/seedData';
 
 describe('DEW & GO — Full End-to-End Catalogue Synchronization Verification', () => {
   const xlsxPath = path.resolve(__dirname, '../../public/test_77_catalogue.xlsx');
+
+  beforeAll(() => {
+    store.resetTo(BASE_INITIAL_PRODUCTS);
+  });
+
+  afterAll(() => {
+    store.resetTo(INITIAL_PRODUCTS);
+  });
 
   it('Step 1-4: Reads Excel file, detects columns, parses and imports 77 products as drafts', async () => {
     // 1. Read the Excel workbook

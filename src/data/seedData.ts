@@ -1,4 +1,5 @@
 import { Category, Product, DeliveryZone, Coupon, DeliveryPartner, Order } from '../types';
+import { IMPORTED_77_PRODUCTS } from './imported77Products';
 
 export const INITIAL_CATEGORIES: Category[] = [
   {
@@ -80,10 +81,20 @@ export const INITIAL_CATEGORIES: Category[] = [
     displayOrder: 8,
     isActive: true,
     productCount: 15
+  },
+  {
+    id: 'cat-sun-care',
+    name: 'Sun Care',
+    slug: 'sun-care',
+    description: 'High-protection broad-spectrum SPF 50+ water gels, fluid invisible sunscreens, and after-sun barrier balms.',
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80',
+    displayOrder: 9,
+    isActive: true,
+    productCount: 13
   }
 ];
 
-export const INITIAL_PRODUCTS: Product[] = [
+export const BASE_INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-cerave-hydrating',
     name: 'Hydrating Facial Cleanser',
@@ -930,6 +941,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     createdAt: '2026-02-18T10:00:00Z'
   }
 ];
+
+export const INITIAL_PRODUCTS: Product[] = [...BASE_INITIAL_PRODUCTS, ...IMPORTED_77_PRODUCTS];
 
 export const INITIAL_DELIVERY_ZONES: DeliveryZone[] = [
   {

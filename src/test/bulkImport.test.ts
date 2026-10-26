@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import * as XLSX from 'xlsx';
 import { 
   generateSampleWorkbook, 
@@ -11,9 +11,16 @@ import {
   PLACEHOLDER_COSMETIC_IMAGE
 } from '../lib/bulkImportService';
 import { store } from '../lib/store';
-import { INITIAL_CATEGORIES } from '../data/seedData';
+import { INITIAL_CATEGORIES, BASE_INITIAL_PRODUCTS, INITIAL_PRODUCTS } from '../data/seedData';
 
 describe('DEW & GO — Bulk Excel Product Import Engine', () => {
+  beforeAll(() => {
+    store.resetTo(BASE_INITIAL_PRODUCTS);
+  });
+
+  afterAll(() => {
+    store.resetTo(INITIAL_PRODUCTS);
+  });
 
   it('1. Generates a valid sample Excel workbook with Instructions and Catalogue sheets', () => {
     const buffer = generateSampleWorkbook();

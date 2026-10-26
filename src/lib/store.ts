@@ -135,10 +135,32 @@ class Store {
   private init() {
     try {
       const storedProds = safeStorage.getItem(KEYS.PRODUCTS);
-      this.products = storedProds ? JSON.parse(storedProds) : INITIAL_PRODUCTS;
+      if (storedProds) {
+        const parsed: Product[] = JSON.parse(storedProds);
+        const existingIds = new Set(parsed.map(p => p.id));
+        const missingFromInitial = INITIAL_PRODUCTS.filter(p => !existingIds.has(p.id));
+        this.products = missingFromInitial.length > 0 ? [...parsed, ...missingFromInitial] : parsed;
+        if (missingFromInitial.length > 0) {
+          safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+        }
+      } else {
+        this.products = [...INITIAL_PRODUCTS];
+        safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+      }
 
       const storedCats = safeStorage.getItem(KEYS.CATEGORIES);
-      this.categories = storedCats ? JSON.parse(storedCats) : INITIAL_CATEGORIES;
+      if (storedCats) {
+        const parsedCats: Category[] = JSON.parse(storedCats);
+        const existingCatIds = new Set(parsedCats.map(c => c.id));
+        const missingCats = INITIAL_CATEGORIES.filter(c => !existingCatIds.has(c.id));
+        this.categories = missingCats.length > 0 ? [...parsedCats, ...missingCats] : parsedCats;
+        if (missingCats.length > 0) {
+          safeStorage.setItem(KEYS.CATEGORIES, JSON.stringify(this.categories));
+        }
+      } else {
+        this.categories = [...INITIAL_CATEGORIES];
+        safeStorage.setItem(KEYS.CATEGORIES, JSON.stringify(this.categories));
+      }
 
       const storedZones = safeStorage.getItem(KEYS.ZONES);
       this.deliveryZones = storedZones ? JSON.parse(storedZones) : INITIAL_DELIVERY_ZONES;
@@ -355,6 +377,13 @@ class Store {
   public deleteProduct(id: string): void {
     // Soft delete / unpublish
     this.updateProduct(id, { isPublished: false, status: 'archived' });
+  }
+
+  public resetTo(products: Product[]): void {
+    this.products = [...products];
+    safeStorage.setItem(KEYS.PRODUCTS, JSON.stringify(this.products));
+    this.syncCategoryCounts();
+    this.notify();
   }
 
   // --- CATEGORIES ---

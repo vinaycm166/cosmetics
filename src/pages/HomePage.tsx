@@ -1010,7 +1010,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               onClick={() => onNavigate('/shop')}
               className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/20 text-xs font-bold tracking-[0.2em] uppercase transition-all shadow-md hover:shadow-xl cursor-pointer"
             >
-              <span>VIEW FULL 750+ PRODUCT CATALOGUE</span>
+              <span>VIEW FULL CATALOGUE ({allProducts.length} FORMULATIONS)</span>
               <ArrowRight className="w-4 h-4 text-rose-300" />
             </button>
           </div>
