@@ -46,6 +46,20 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
   const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track scroll position for cinematic transparent-to-solid transition on Homepage
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const isHomeHero = currentRoute === '/' && !isScrolled;
+
   // Rotating promotional announcements
   const announcements = [
     { text: '✨ Flash Beauty Deal: 20% OFF with code DEWGLOW20 on your routine', link: '/offers' },
@@ -295,10 +309,18 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
   );
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-border shadow-subtle transition-colors">
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+      isHomeHero 
+        ? 'bg-[#0B0206]/85 backdrop-blur-md border-b border-white/10 text-white shadow-2xl' 
+        : 'bg-white/95 backdrop-blur-md border-b border-[#EFE7E1] text-charcoal shadow-sm'
+    }`}>
       
-      {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP (MATCHING REFERENCE IMAGE) */}
-      <div className="bg-burgundy text-white py-1.5 px-4 text-center overflow-hidden transition-all duration-300">
+      {/* 1. TOP PROMOTIONAL ANNOUNCEMENT STRIP */}
+      <div className={`py-1.5 px-4 text-center overflow-hidden transition-all duration-300 ${
+        isHomeHero 
+          ? 'bg-[#150309]/95 text-rose-200/90 border-b border-white/5' 
+          : 'bg-burgundy text-white'
+      }`}>
         <div className="max-w-7xl mx-auto flex items-center justify-center text-[10px] sm:text-xs font-medium tracking-wide">
           {/* Mobile Single Announcement */}
           <div className="sm:hidden flex items-center justify-center gap-1.5 truncate max-w-full">
@@ -326,7 +348,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
 
       {/* 2. MAIN HEADER ROW */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-6">
+        <div className="flex items-center justify-between h-16 sm:h-18 gap-2 sm:gap-6">
           
           {/* Logo with Botanical Flower Icon */}
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 shrink-0">
@@ -334,18 +356,24 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
               onClick={() => onNavigate('/')}
               className="text-left flex items-center gap-1.5 sm:gap-2 group py-1"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-burgundy/5 flex items-center justify-center text-burgundy group-hover:scale-105 transition-transform shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-burgundy" viewBox="0 0 24 24">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 shrink-0 ${
+                isHomeHero ? 'bg-white/10 text-rose-200' : 'bg-burgundy/5 text-burgundy'
+              }`}>
+                <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isHomeHero ? 'fill-rose-300' : 'fill-burgundy'}`} viewBox="0 0 24 24">
                   <path d="M12 2C13.5 5 15.5 6.5 18.5 8C15.5 9.5 13.5 11 12 14C10.5 11 8.5 9.5 5.5 8C8.5 6.5 10.5 5 12 2Z" />
                   <circle cx="12" cy="18" r="2" />
                   <path d="M7 16C8 14 10 13.5 12 14C14 13.5 16 14 17 16C15 17 14 18.5 12 18.5C10 18.5 9 17 7 16Z" opacity="0.6" />
                 </svg>
               </div>
               <div className="flex flex-col">
-                <span className="font-editorial text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-charcoal group-hover:text-burgundy transition-colors leading-none">
+                <span className={`font-editorial text-xl sm:text-2xl md:text-3xl font-bold tracking-tight transition-colors leading-none ${
+                  isHomeHero ? 'text-white group-hover:text-rose-200' : 'text-charcoal group-hover:text-burgundy'
+                }`}>
                   Dew & Go
                 </span>
-                <span className="text-[7.5px] sm:text-[8.5px] tracking-[0.2em] sm:tracking-[0.25em] text-burgundy/80 uppercase font-semibold mt-0.5">
+                <span className={`text-[7.5px] sm:text-[8.5px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-semibold mt-0.5 ${
+                  isHomeHero ? 'text-rose-300/80' : 'text-burgundy/80'
+                }`}>
                   BEAUTY • CARE • YOU
                 </span>
               </div>
@@ -362,14 +390,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   placeholder="Search for skincare, makeup, haircare..."
-                  className="w-full pl-9 pr-8 py-2 sm:py-2.5 rounded-full border border-[#EFE7E1] bg-[#FAF8F6] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-burgundy focus:ring-1 focus:ring-burgundy/20 transition-all shadow-inner"
+                  className={`w-full pl-9 pr-8 py-2 sm:py-2.5 rounded-full text-xs transition-all shadow-inner focus:outline-none ${
+                    isHomeHero 
+                      ? 'border border-white/20 bg-white/10 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-rose-300 focus:ring-1 focus:ring-rose-300/30' 
+                      : 'border border-[#EFE7E1] bg-[#FAF8F6] text-charcoal placeholder:text-muted focus:bg-white focus:border-burgundy focus:ring-1 focus:ring-burgundy/20'
+                  }`}
                 />
-                <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${
+                  isHomeHero ? 'text-white/60' : 'text-muted'
+                }`} />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${
+                      isHomeHero ? 'text-white/70 hover:text-white' : 'text-muted hover:text-charcoal'
+                    }`}
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -383,14 +419,18 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Hyperlocal Delivery Location Selector Pill */}
             <button
               onClick={openLocationModal}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full border border-[#EFE7E1] bg-white hover:border-burgundy/40 hover:bg-[#FAF8F6] text-left transition-all duration-150 shadow-sm shrink-0 cursor-pointer"
+              className={`hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-full border text-left transition-all duration-150 shadow-sm shrink-0 cursor-pointer ${
+                isHomeHero 
+                  ? 'border-white/20 bg-white/10 text-white hover:bg-white/20' 
+                  : 'border-[#EFE7E1] bg-white hover:border-burgundy/40 hover:bg-[#FAF8F6] text-charcoal'
+              }`}
               title="Change Delivery Location"
             >
-              <MapPin className="w-3.5 h-3.5 text-burgundy shrink-0" />
-              <span className="text-xs font-semibold text-charcoal truncate max-w-[150px]">
+              <MapPin className={`w-3.5 h-3.5 shrink-0 ${isHomeHero ? 'text-rose-300' : 'text-burgundy'}`} />
+              <span className="text-xs font-semibold truncate max-w-[150px]">
                 {selectedArea || `Gokulam, Mysuru`}
               </span>
-              <ChevronDown className="w-3 h-3 text-muted shrink-0" />
+              <ChevronDown className={`w-3 h-3 shrink-0 ${isHomeHero ? 'text-white/60' : 'text-muted'}`} />
             </button>
           </div>
 
@@ -401,7 +441,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
+                className={`p-2 rounded-full transition-colors ${
+                  isHomeHero 
+                    ? 'text-white/90 hover:text-white hover:bg-white/10' 
+                    : 'text-charcoal hover:text-burgundy hover:bg-[#FAF8F6]'
+                }`}
                 title="Account Menu"
               >
                 <User className="w-5 h-5" />
@@ -493,7 +537,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Wishlist */}
             <button
               onClick={() => onNavigate('/account/wishlist')}
-              className="relative p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
+              className={`relative p-2 rounded-full transition-colors ${
+                isHomeHero 
+                  ? 'text-white/90 hover:text-white hover:bg-white/10' 
+                  : 'text-charcoal hover:text-burgundy hover:bg-[#FAF8F6]'
+              }`}
               title="Wishlist"
             >
               <Heart className="w-5 h-5" />
@@ -507,7 +555,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Shopping Bag with Solid Burgundy Badge */}
             <button
               onClick={openCartDrawer}
-              className="relative p-2 rounded-full hover:bg-[#FAF8F6] text-charcoal hover:text-burgundy transition-colors"
+              className={`relative p-2 rounded-full transition-colors ${
+                isHomeHero 
+                  ? 'text-white/90 hover:text-white hover:bg-white/10' 
+                  : 'text-charcoal hover:text-burgundy hover:bg-[#FAF8F6]'
+              }`}
               title="Shopping Bag"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -521,7 +573,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-charcoal hover:bg-warmcream rounded-md"
+              className={`md:hidden p-2 rounded-md ${
+                isHomeHero ? 'text-white hover:bg-white/10' : 'text-charcoal hover:bg-warmcream'
+              }`}
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -538,14 +592,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 placeholder="Search skincare, makeup, haircare..."
-                className="w-full pl-9 pr-8 py-2 rounded-full border border-[#EFE7E1] bg-[#FAF8F6] text-xs text-charcoal placeholder:text-muted focus:bg-white focus:outline-none focus:border-burgundy transition-all shadow-inner"
+                className={`w-full pl-9 pr-8 py-2 rounded-full text-xs placeholder:text-muted transition-all shadow-inner focus:outline-none ${
+                  isHomeHero 
+                    ? 'border-white/20 bg-white/10 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-rose-300' 
+                    : 'border-[#EFE7E1] bg-[#FAF8F6] text-charcoal focus:bg-white focus:border-burgundy'
+                }`}
               />
-              <Search className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${
+                isHomeHero ? 'text-white/60' : 'text-muted'
+              }`} />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal p-1"
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${
+                    isHomeHero ? 'text-white/70 hover:text-white' : 'text-muted hover:text-charcoal'
+                  }`}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -558,13 +620,17 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
         </div>
 
         {/* 5. CATEGORY NAVIGATION BAR (EXACT 8 CATEGORIES FROM REFERENCE) */}
-        <nav className="hidden md:flex items-center justify-between border-t border-[#F0EAE8] py-2.5 text-xs font-medium tracking-wide relative">
+        <nav className={`hidden md:flex items-center justify-between py-2.5 text-xs font-medium tracking-wide relative transition-colors ${
+          isHomeHero ? 'border-t border-white/10 text-white/90' : 'border-t border-[#F0EAE8] text-charcoal'
+        }`}>
           <div className="flex items-center gap-6 lg:gap-8">
             
             {/* All Categories Dropdown Trigger */}
             <button
               onClick={() => onNavigate('/shop')}
-              className="flex items-center gap-1.5 text-xs font-bold text-charcoal hover:text-burgundy transition-colors"
+              className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
+                isHomeHero ? 'text-white hover:text-rose-200' : 'text-charcoal hover:text-burgundy'
+              }`}
             >
               <Menu className="w-4 h-4" />
               <span>All Categories</span>
@@ -578,8 +644,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/skincare')}
-                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
-                  currentRoute.includes('skincare') ? 'text-burgundy font-bold' : 'text-charcoal'
+                className={`transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('skincare') 
+                    ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                    : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
                 }`}
               >
                 <span>Skincare</span>
@@ -594,8 +662,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/makeup')}
-                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
-                  currentRoute.includes('makeup') ? 'text-burgundy font-bold' : 'text-charcoal'
+                className={`transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('makeup') 
+                    ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                    : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
                 }`}
               >
                 <span>Makeup</span>
@@ -610,8 +680,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/haircare')}
-                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
-                  currentRoute.includes('haircare') ? 'text-burgundy font-bold' : 'text-charcoal'
+                className={`transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('haircare') 
+                    ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                    : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
                 }`}
               >
                 <span>Haircare</span>
@@ -626,8 +698,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             >
               <button
                 onClick={() => onNavigate('/category/fragrance')}
-                className={`hover:text-burgundy transition-colors text-xs font-medium flex items-center gap-0.5 ${
-                  currentRoute.includes('fragrance') ? 'text-burgundy font-bold' : 'text-charcoal'
+                className={`transition-colors text-xs font-medium flex items-center gap-0.5 ${
+                  currentRoute.includes('fragrance') 
+                    ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                    : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
                 }`}
               >
                 <span>Fragrance</span>
@@ -637,8 +711,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Bath & Body */}
             <button
               onClick={() => onNavigate('/category/bath-body')}
-              className={`hover:text-burgundy transition-colors text-xs font-medium ${
-                currentRoute.includes('bath-body') ? 'text-burgundy font-bold' : 'text-charcoal'
+              className={`transition-colors text-xs font-medium ${
+                currentRoute.includes('bath-body') 
+                  ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                  : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
               }`}
             >
               Bath & Body
@@ -647,8 +723,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Beauty Tools */}
             <button
               onClick={() => onNavigate('/category/beauty-tools')}
-              className={`hover:text-burgundy transition-colors text-xs font-medium ${
-                currentRoute.includes('beauty-tools') ? 'text-burgundy font-bold' : 'text-charcoal'
+              className={`transition-colors text-xs font-medium ${
+                currentRoute.includes('beauty-tools') 
+                  ? (isHomeHero ? 'text-rose-300 font-bold' : 'text-burgundy font-bold')
+                  : (isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy')
               }`}
             >
               Beauty Tools
@@ -657,7 +735,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Brands */}
             <button
               onClick={() => onNavigate('/shop')}
-              className="hover:text-burgundy transition-colors text-xs font-medium text-charcoal"
+              className={`transition-colors text-xs font-medium ${
+                isHomeHero ? 'text-white/85 hover:text-white' : 'text-charcoal hover:text-burgundy'
+              }`}
             >
               Brands
             </button>
@@ -665,7 +745,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {/* Offers */}
             <button
               onClick={() => onNavigate('/offers')}
-              className="hover:text-burgundy transition-colors text-xs font-semibold text-burgundy flex items-center gap-1"
+              className={`transition-colors text-xs font-semibold flex items-center gap-1 ${
+                isHomeHero ? 'text-rose-300 hover:text-rose-200' : 'text-burgundy hover:text-burgundy-dark'
+              }`}
             >
               <span>Offers</span>
             </button>
@@ -676,7 +758,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => onNavigate('/beauty-advisor')}
-              className="text-xs font-bold text-berry hover:text-rose transition-colors flex items-center gap-1 bg-blush px-2.5 py-1 rounded-full border border-rose/20"
+              className={`text-xs font-bold transition-colors flex items-center gap-1 px-2.5 py-1 rounded-full border ${
+                isHomeHero 
+                  ? 'bg-white/10 hover:bg-white/20 text-rose-200 border-white/20' 
+                  : 'bg-blush hover:bg-blush-dark text-berry border-rose/20'
+              }`}
             >
               <Sparkles className="w-3 h-3 text-rose" />
               <span>AI Skin Advisor</span>
@@ -685,7 +771,9 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentRoute }) => {
             {role !== 'customer' && (
               <button
                 onClick={() => onNavigate(role === 'delivery_person' ? '/delivery' : '/admin')}
-                className="text-xs font-bold text-charcoal hover:text-berry underline"
+                className={`text-xs font-bold underline ${
+                  isHomeHero ? 'text-white hover:text-rose-200' : 'text-charcoal hover:text-berry'
+                }`}
               >
                 {role === 'delivery_person' ? 'Rider Hub' : 'Admin Portal'}
               </button>
